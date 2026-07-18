@@ -1,0 +1,58 @@
+---
+title: "Astro – nowoczesny framework do budowy stron"
+description: "Dlaczego Astro to świetny wybór do blogów i stron contentowych? Przegląd możliwości."
+date: 2026-07-18
+category: technologia
+tags:
+  - astro
+  - frontend
+  - framework
+author: "Tomek"
+draft: false
+---
+
+## Czym jest Astro?
+
+[Astro](https://astro.build) to framework do budowania stron internetowych, który domyślnie wysyła **zero JavaScriptu** do przeglądarki. JS ładuje się tylko tam, gdzie jest naprawdę potrzebny – to podejście nazywa się _partial hydration_.
+
+### Dlaczego warto?
+
+Astro sprawdza się idealnie przy stronach, gdzie treść jest najważniejsza:
+
+- Blogi i strony firmowe
+- Dokumentacja techniczna
+- Landing page'e i portfolio
+- Sklepy internetowe (z integracjami)
+
+### Content Collections
+
+Jedną z najlepszych funkcji Astro są **kolekcje treści** – pozwalają zarządzać plikami Markdown/MDX z type-safe frontmatterem:
+
+```ts
+import { defineCollection, z } from "astro:content";
+
+const blog = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+
+export const collections = { blog };
+```
+
+### Podsumowanie
+
+| Cecha              | Astro       | Next.js    |
+|--------------------|-------------|------------|
+| Domyślny JS        | 0 kB        | ~ 80 kB    |
+| Wsparcie MDX       | ✅ natywne  | ✅         |
+| Strony statyczne   | ✅ idealne  | ✅         |
+| SPA / routing      | View Transitions | ✅ full   |
+| Krzywa uczenia     | Niska       | Średnia    |
+
+Astro to świetny wybór, jeśli priorytetem jest szybkość i prostota. Jeśli potrzebujesz bardziej interaktywnej aplikacji – Next.js może być lepszy.
+
+Do następnego!

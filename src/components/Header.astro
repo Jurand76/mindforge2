@@ -1,0 +1,54 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo">MindForge</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/kategoria/psychologia">Psychologia</a>
+      <a href="/kategoria/technologia">Technologia</a>
+      <a href="/kategoria/ciekawostki">Ciekawostki</a>
+      <a href="/kategoria/marketing">Marketing</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+.site-header {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-card);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 1.5rem;
+}
+
+nav a {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+nav a:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+</style>

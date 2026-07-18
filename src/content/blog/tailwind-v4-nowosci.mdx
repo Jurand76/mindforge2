@@ -1,0 +1,21 @@
+---
+category: "technologia"
+title: "Tailwind CSS v4 — co nowego?"
+description: "Nowy silnik, brak konfiguracji, CSS-first. Przegląd najważniejszych zmian."
+date: 2026-06-18
+author: "Tomek"
+draft: false
+tags: ["css", "frontend", "tailwind"]
+---
+
+## Nowe podejście do konfiguracji
+
+Tailwind CSS v4 to przełomowa aktualizacja, która porzuca dotychczasowy plik `tailwind.config.js` na rzecz konfiguracji bezpośrednio w CSS. Dzięki nowemu silnikowi Oxide, napisanemu w Rust, kompilacja stała się nawet dziesięciokrotnie szybsza. Framework staje się teraz znacznie bardziej przystępny — wystarczy jeden import w pliku CSS, aby rozpocząć pracę, bez konieczności instalowania PostCSS jako osobnej zależności.
+
+## CSS-first i automatyczne wykrywanie
+
+Największą zmianą filozoficzną jest przejście z konfiguracji JavaScriptowej na natywne właściwości CSS. Kolory, fonty, odstępy i breakpointy definiuje się teraz za pomocą zmiennych CSS i dyrektywy `@theme`. Silnik automatycznie wykrywa klasy używane w projekcie, skanując pliki bez potrzeby ręcznego definiowania ścieżek w konfiguracji. To ogromne uproszczenie, szczególnie dla osób rozpoczynających przygodę z Tailwindem.
+
+## Co to oznacza dla istniejących projektów?
+
+Migracja z v3 do v4 jest stosunkowo płynna dzięki narzędziu do automatycznej aktualizacji. Większość klas utility pozostaje bez zmian, a nowe możliwości — takie jak kontenery zapytań (`@container`), ulepszone wsparcie dla trybu ciemnego i dynamiczne wartości — można wprowadzać stopniowo. Tailwind v4 umacnia swoją pozycję jako najpopularniejsze narzędzie do stylizacji w ekosystemie frontendowym, jednocześnie znacząco obniżając próg wejścia.

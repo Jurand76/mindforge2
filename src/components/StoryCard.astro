@@ -1,0 +1,49 @@
+---
+import type { Article } from "../data/content";
+import { CATEGORY_COLORS, CATEGORY_NAMES } from "../data/content";
+
+interface Props {
+  article: Article;
+  size?: "large" | "small";
+}
+
+const { article, size = "small" } = Astro.props;
+const isLarge = size === "large";
+const catColor = CATEGORY_COLORS[article.category];
+---
+
+<a
+  href={`/blog/${article.slug}`}
+  class={`group relative block overflow-hidden ${isLarge ? "row-span-2" : ""}`}
+>
+  <img
+    src={article.image}
+    alt={article.title}
+    class={`w-full object-cover transition-transform duration-500 group-hover:scale-105 ${isLarge ? "h-full min-h-0" : "h-full"}`}
+    style={!isLarge ? "aspect-ratio: 3/4" : ""}
+    loading="lazy"
+    decoding="async"
+  />
+  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+  <div class="absolute bottom-0 left-0 p-5 md:p-8 w-full">
+    <span
+      class="text-[10px] tracking-[0.2em] uppercase text-white/90 font-semibold mb-2 inline-block px-2 py-0.5 rounded-sm"
+      style={`background-color: ${catColor}`}
+    >
+      {CATEGORY_NAMES[article.category]}
+    </span>
+    <h3 class={`text-white leading-tight mt-2 ${isLarge ? "text-2xl md:text-3xl" : "text-lg md:text-xl"}`}>
+      {article.title}
+    </h3>
+    {isLarge && (
+      <>
+        <p class="text-white/70 text-sm mt-2 max-w-md hidden md:block">
+          {article.description}
+        </p>
+        <span class="inline-block mt-3 text-[10px] tracking-[0.2em] uppercase text-white/90 border border-white/40 px-4 py-2 hover:bg-white hover:text-black transition-colors">
+          Czytaj
+        </span>
+      </>
+    )}
+  </div>
+</a>

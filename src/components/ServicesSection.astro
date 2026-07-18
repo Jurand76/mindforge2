@@ -1,0 +1,35 @@
+---
+import type { Service } from "../data/content";
+import { CATEGORY_COLORS, CATEGORY_NAMES } from "../data/content";
+
+interface Props {
+  services: Service[];
+}
+
+const { services } = Astro.props;
+---
+
+<section id="services" class="bg-black text-white pt-12 pb-10 md:pb-16 mt-10 border-t border-[#d4d4d4]">
+  <div class="max-w-[1400px] mx-auto px-4 md:px-8">
+    <h2 class="text-2xl md:text-3xl mb-8 fade-in">
+      Obszary tematyczne
+    </h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+      {services.map((service, i) => (
+        <div class={`fade-in flex flex-col ${i > 0 ? "border-t sm:border-t-0 sm:border-l border-white/20 pt-8 sm:pt-0 sm:pl-8" : ""}`}>
+          <span class="text-[10px] tracking-[0.15em] uppercase font-semibold text-white inline-block mb-4" style={`background-color: ${CATEGORY_COLORS[service.category]}; padding: 0.25rem 0.6rem; border-radius: 2px;`}>{CATEGORY_NAMES[service.category]}</span>
+          <p class="text-sm text-white/60 leading-relaxed">
+            {service.description}
+          </p>
+          <a
+            href={`/kategoria/${service.category}`}
+            class="inline-block mt-auto pt-4 text-[10px] tracking-[0.2em] uppercase text-white/50 hover:text-white transition-colors border-b border-white/30 hover:border-white pb-1"
+          >
+            Zobacz wpisy &rarr;
+          </a>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

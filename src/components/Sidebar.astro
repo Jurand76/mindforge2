@@ -1,0 +1,119 @@
+---
+import { getCollection } from "astro:content";
+import { CATEGORIES, type Category } from "../content.config";
+
+interface Props {
+  posts: Awaited<ReturnType<typeof getCollection<"blog">>>;
+}
+
+const { posts } = Astro.props;
+
+const CATEGORY_NAMES: Record<Category, string> = {
+  psychologia: "Psychologia",
+  technologia: "Technologia",
+  ciekawostki: "Ciekawostki",
+  marketing: "Marketing",
+};
+---
+
+<aside class="sidebar">
+  <h3 class="sidebar-title">Najnowsze wpisy</h3>
+
+  {CATEGORIES.map((cat) => {
+    const catPosts = posts
+      .filter((p) => p.data.category === cat)
+      .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+      .slice(0, 3);
+
+    if (catPosts.length === 0) return null;
+
+    return (
+      <div class="sidebar-group">
+        <a href={`/kategoria/${cat}`} class={`sidebar-cat cat-${cat}`}>
+          {CATEGORY_NAMES[cat]}
+        </a>
+        <ul>
+          {catPosts.map((p) => (
+            <li>
+              <a href={`/blog/${p.id}`}>{p.data.title}</a>
+              <time datetime={p.data.date.toISOString()}>
+                {p.data.date.toLocaleDateString("pl-PL", {
+                  month: "short",
+                  day: "numeric",
+                })}
+              </time>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  })}
+</aside>
+
+<style>
+.sidebar {
+  position: sticky;
+  top: 5rem;
+}
+
+.sidebar-title {
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+  margin: 0 0 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.sidebar-group {
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-cat {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+}
+
+.sidebar-cat:hover {
+  text-decoration: underline;
+}
+
+.cat-psychologia { color: var(--cat-psychologia); }
+.cat-technologia { color: var(--cat-technologia); }
+.cat-ciekawostki { color: var(--cat-ciekawostki); }
+.cat-marketing { color: var(--cat-marketing); }
+
+.sidebar-group ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-group li {
+  margin-bottom: 0.55rem;
+  line-height: 1.35;
+}
+
+.sidebar-group li a {
+  font-size: 0.88rem;
+  color: var(--color-text);
+  display: block;
+}
+
+.sidebar-group li a:hover {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.sidebar-group li time {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+}
+</style>

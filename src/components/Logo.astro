@@ -1,0 +1,17 @@
+---
+interface Props {
+  name?: string;
+  tagline?: string;
+}
+
+const { name = "MindForge", tagline = "PSYCHOLOGIA & TECHNOLOGIA & CIEKAWOSTKI & MARKETING" } = Astro.props;
+---
+
+<div class="text-center py-12 md:py-16 px-4" style="color: #fff;">
+  <h1 class="signature text-6xl md:text-8xl leading-none tracking-normal mb-4" style="color: #fff;">
+    {name}
+  </h1>
+  <p class="text-xs md:text-sm tracking-[0.3em] uppercase font-medium" style="color: rgba(255,255,255,0.5);">
+    {tagline}
+  </p>
+</div>

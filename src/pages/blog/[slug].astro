@@ -1,0 +1,218 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import type { Category } from "../../content.config";
+import { CATEGORY_COLORS, CATEGORY_NAMES, CATEGORY_IMAGES } from "../../data/content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { title, description, date, category, tags, author } = post.data;
+const catColor = CATEGORY_COLORS[category] || "#2563eb";
+const bannerImage = CATEGORY_IMAGES[category];
+---
+
+<BaseLayout title={`${title} | MindForge`} description={description}>
+  <article class="max-w-[1400px] mx-auto px-4 md:px-8 pt-[30px] pb-12 md:pb-20" style="background: #fff;">
+
+    <div class="relative overflow-hidden mb-8" style="aspect-ratio: 21/9; width: 100%;">
+      <img
+        src={bannerImage}
+        alt={title}
+        class="w-full h-full object-cover"
+        loading="eager"
+        decoding="async"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+      <div class="absolute bottom-6 left-6">
+        <span
+          class="inline-block text-[10px] tracking-[0.15em] uppercase font-semibold px-3 py-1"
+          style={`background-color: ${catColor}; border-radius: 2px; color: #fff;`}
+        >
+          {CATEGORY_NAMES[category]}
+        </span>
+      </div>
+    </div>
+
+    <div class="mx-auto">
+      <header class="mb-12">
+        <h1 style="font-family: 'Montserrat', 'Inter', sans-serif; font-size: 3rem; font-weight: 700; line-height: 1.15; margin-bottom: 0.3rem;">
+          {title}
+        </h1>
+
+        <div class="flex items-center gap-3 text-sm text-muted mb-4" style="font-family: 'Montserrat', 'Inter', sans-serif;">
+          <span>{author}</span>
+          <span class="text-[#ccc]">&bull;</span>
+          <time datetime={date.toISOString()}>
+            {date.toLocaleDateString("pl-PL", { year: "numeric", month: "long", day: "numeric" })}
+          </time>
+          <span class="text-[#ccc]">&bull;</span>
+          <span>{Math.ceil(description.length / 800)} min czytania</span>
+        </div>
+
+        {tags.length > 0 && (
+          <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-[#e5e5e5]">
+            {tags.map((tag) => (
+              <span class="text-[10px] tracking-[0.1em] uppercase text-muted border border-[#ddd] px-3 py-1">{tag}</span>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <div class="prose-custom">
+        <Content />
+      </div>
+
+      <footer class="mt-20 pt-8 border-t border-[#e5e5e5] flex justify-between items-center">
+        <a href="/" class="text-sm text-muted hover:text-black transition-colors">&larr; Powrót</a>
+        <a href={`/kategoria/${category}`} class="text-sm text-muted hover:text-black transition-colors">Więcej z {CATEGORY_NAMES[category]} &rarr;</a>
+      </footer>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .prose-custom :global(p) {
+    margin-bottom: 1.6em;
+    line-height: 1.65;
+    color: #333;
+    font-size: 1rem;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .prose-custom :global(> p:first-of-type::first-letter) {
+    font-size: 4.5rem;
+    float: left;
+    line-height: 0.8;
+    font-weight: 600;
+    margin-right: 0.15em;
+    margin-top: 0.05em;
+    color: #111;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+  }
+  .prose-custom :global(h2) {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 2.2em 0 0.6em;
+    color: #111;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+  .prose-custom :global(h2::before) {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #b9a38f;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .prose-custom :global(h3) {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 1.8em 0 0.4em;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: #111;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+  }
+  .prose-custom :global(blockquote) {
+    border-left: 3px solid #2d6a4f;
+    margin: 2em 0;
+    padding: 1em 1.5em;
+    color: #555;
+    font-style: italic;
+    font-size: 1.1rem;
+    background: #f0f5f0;
+  }
+  .prose-custom :global(blockquote p) {
+    margin-bottom: 0;
+    font-family: 'Montserrat', sans-serif;
+  }
+  .prose-custom :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2em 0;
+    font-size: 0.9rem;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+  }
+  .prose-custom :global(th),
+  .prose-custom :global(td) {
+    border: 1px solid #e5e5e5;
+    padding: 0.7em 1em;
+    text-align: left;
+  }
+  .prose-custom :global(th) {
+    background: #f5f5f5;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+  }
+  .prose-custom :global(code) {
+    font-size: 0.85em;
+    background: #f5f5f4;
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+    font-family: 'Consolas', monospace;
+  }
+  .prose-custom :global(pre) {
+    background: #1e1e1e;
+    color: #e0e0e0;
+    border-radius: 4px;
+    padding: 1.2em 1.4em;
+    overflow-x: auto;
+    margin: 2em 0;
+    font-family: 'Consolas', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  .prose-custom :global(pre code) {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+.prose-custom :global(ul),
+  .prose-custom :global(ol) {
+    margin: 0 0 1.5em;
+    padding-left: 2.5em;
+    line-height: 1.8;
+    color: #333;
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-size: 1.05rem;
+  }
+  .prose-custom :global(li) {
+    margin-bottom: 0.4em;
+  }
+  .prose-custom :global(a) {
+    color: #2563eb;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .prose-custom :global(a:hover) {
+    border-bottom-color: #2563eb;
+  }
+  .prose-custom :global(hr) {
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    margin: 2.5em 0;
+  }
+  .prose-custom :global(img) {
+    max-width: 100%;
+    height: auto;
+  }
+  .prose-custom :global(strong) {
+    font-weight: 600;
+    color: #111;
+  }
+</style>
