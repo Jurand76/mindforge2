@@ -1,0 +1,39 @@
+---
+title: "Algorytmy heurystyczne"
+description: "Jakiś czas temu świat obiegła sensacyjna informacja, że 41-letni informatyk Przemysław Dębiak, pseudonim \"Psyho\", wygrał prestiżowy konkurs programist..."
+date: 2025-07-28
+category: "psychologia"
+tags: []
+author: "Tomek"
+draft: false
+---
+
+Jakiś czas temu świat obiegła sensacyjna informacja, że 41-letni informatyk Przemysław Dębiak, pseudonim "Psyho", wygrał prestiżowy konkurs programistyczny AtCoder World Tour 2025 w Tokio, wyprzedzając m.in. rozwiązanie zaproponowane przez AI. Trwające 10 godzin zmagania polegały na rozwiązaniu problemu opartego o algorytmy heurystyczne. I idę o zakład, że większość z Was nie ma bladego pojęcia, czym takie algorytmy są i jakiego rodzaju problemy pozwalają rozwiązać. No to rozsiądźcie się wygodnie w fotelach.
+
+Słowo "heurystyka" pochodzi z greckiego "heuriskein", co oznacza "odkrywać" lub "znajdować". Tak jak pierwotne znaczenie słowa sugeruje proces poszukiwania i odkrywania - tak algorytmy heurystyczne eksplorują przestrzeń możliwych rozwiązań. Starożytni myśliciele "odkrywali" prawdy poprzez obserwację i doświadczenie, algorytmy heurystyczne często uczą się i adaptują w trakcie działania, odkrywając lepsze ścieżki rozwiązania. Tak więc algorytmy heurystyczne z definicji to metody rozwiązywania problemów, które nie gwarantują znalezienia optymalnego rozwiązania, ale pozwalają znaleźć rozwiązanie "wystarczająco dobre" w rozsądnym czasie. Jak na razie nie brzmi to za bardzo tajemniczo, w czym więc tkwi istota zagadnienia? Otóż parametry "wystarczająco dobre" oraz "rozsądny czas" są nieprecyzyjne i tak naprawdę wygrywa ten algorytm, który zaproponuje najlepsze rozwiązanie w porównaniu z konkurencją - nie nakłada się tutaj żadnych konkretnych limitów.
+
+Kiedy stosuje się rozwiązania oparte o heurystykę i dlaczego w ogóle po nie sięgamy? Używa się ich na przykład przy optymalizacji tras, układaniu harmonogramów, czy optymalizacji portfela inwestycyjnego. Jednym z prostszych przykładów, który opisuje to zagadnienie, jest tzw. "problem komiwojażera". Wyobraźmy sobie kierowcę, który dostaje mapę z 6. miastami do odwiedzenia i musi tak rozplanować trasę, aby była ona dla niego optymalna pod kątem czasu spędzonego w podróży. Dla 6 miast mamy 60 różnych kombinacji, w jakich możemy je odwiedzać po kolei. 60 kombinacji - to detal dla współczesnych komputerów i można tutaj zastosować klasyczne rozwiązania, które dokładnie wyznaczą najkrótszą trasę, ale już przy 20 miastach mamy tych kombinacji aż 60 miliardów. I zaczynamy mieć problem, bo obliczenia będą trwały zbyt długo, a kierowca czeka. Dlatego do boju wkracza heurystyka i poszukiwanie rozwiązania "wystarczającego".
+
+Załóżmy, że będziemy rozważać problem dla 6 miast (o prostych nazwach od A do F). Poniższa tabela przedstawia odległości między nimi.
+
+**Miasta i odległości**:
+
+    A   B   C   D   E   F
+A   0  10  15  20   8  12
+B  10   0   9  14  18  11
+C  15   9   0   7  16  13
+D  20  14   7   0  12   6
+E   8  18  16  12   0  19
+F  12  11  13   6  19   0
+
+  W pierwszym kroku przeliczamy sumę odległości między miastami w ich naturalnej kolejności - czyli kierowca jedzie od A→B→C→D→E→F→A (powrót do punktu wyjazdu). Suma kilometrów to 10 + 9 + 7 + 12 + 19 + 12 = **69**.
+
+W kolejnym kroku zamieniamy np. B z E i mamy nową trasę: A→E→C→D→B→F→A. Łączna suma kilometrów to 8 + 16 + 7 + 14 + 11 + 12 = **68**. Mamy więc lepszy wynik, zapisujemy go jako optymalne rozwiązanie.
+
+Następne kroki (iteracje) to dalsze zamiany kolejności odwiedzania miast i sumowanie odległości. Istotne jest to, że **zamiany miast są losowe** - bo nie mamy czasu na sprawdzenie wszystkich możliwych kombinacji. Kiedy zaprzestajemy dalszych obliczeń? Kiedy np. trzy kolejne nowe rozwiązania nie przynoszą poprawy optymalnego rozwiązania. Wtedy akceptujemy otrzymany wynik i nie staramy się znaleźć najkrótszej drogi - zakładamy bowiem, że nie będzie ona istotnie krótsza, a jej wyszukanie będzie wymagało poświęcenia zbyt dużej ilości czasu. I tak na przykład przy trasie A→E→C→F→D→B→A naszym **optymalnym wynikiem** będzie **62**, gdzie najkrótsza możliwa trasa łącząca wszystkie miasta to **58** kilometrów do pokonania. Znaleźliśmy więc rozwiązanie w sensownym czasie, które jest zaledwie o **7% gorsze od najlepszego** jakie istnieje - co w przypadku tego konkretnego zagadnienia jest wartością akceptowalną.
+
+Co jest w powyższych rozważaniach najistotniejsze? Po pierwsze - **losowość**. Algorytmy oparte o heurystykę nie gwarantują otrzymania takiego samego rozwiązania przy każdorazowym uruchomieniu. Aby rozwiązanie było lepsze, można w niektórych przypadkach zaakceptować gorszą odpowiedź, niż optymalna znaleziona wcześniej, jest to tzw. **ucieczka z pułapki lokalnego minimum**. Może się bowiem stać tak, że kolejne trzy rozwiązania dadzą odrobinę gorszy wynik niż optymalny i zakończymy iterację w tym momencie, a za rogiem czai się rozwiązanie czwarte, które byłoby najlepszym. Natomiast jest to nadal rozwiązanie, które tylko przybliża nas do idealnego wyniku, a nie podaje go wprost. Po drugie - **szybkość**. Algorytm heurystyczny w istotny sposób oszczędza czas niezbędny na znalezienie optymalnego rozwiązania, jeśli klasyczne modele matematyczne wymagałyby ogromnych mocy obliczeniowych i dziesiątek godzin spędzonych na analizie danego przypadku.
+
+Algorytmy heurystyczne stosowane są obecnie także w nauce sieci neuronowych - a więc bazy dla AI takiej, jaką znamy w postaci popularnych narzędzi AI. **ChatGPT** zachowuje się dokładnie tak, jak przy rozwiązaniu problemu komiwojażera - te same pytania nie gwarantują uzyskania dokładnie takiej samej odpowiedzi, co więcej - mogą się pojawić odpowiedzi błędne (halucynacje). Generatory grafik za każdym razem wygenerują odrobinę inny obraz, pomimo dokładnie takiego samego promptu. Natomiast czas uzyskania odpowiedzi czy też czas generacji obrazów jest na tyle akceptowalny, że w realny sposób taki model pozwala użytkownikowi na efektywną pracę.
+
+A teraz wróćmy na chwilę do początku artykułu i konkursu, w którym Polak zwyciężył z AI w programowaniu. Miał za przeciwnika heurystycznie wytrenowany model (Open AI), który rozwiązywał heurystyczny problem programistyczny. Czyli coś, co działa nieperfekcyjnie, ale wystarczająco dobrze, opracowało nieperfekcyjne, ale wystarczająco dobre rozwiązanie. I zajęło drugie miejsce. I niech to będzie dla Was taką małą wskazówką w życiu - czasem rozwiązania niedoskonałe są wystarczające, ważne, żeby były przedstawione.
