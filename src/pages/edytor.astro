@@ -1,34 +1,29 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
-import { CATEGORIES, type Category } from "../content.config";
-import fs from "fs";
-import path from "path";
+import { CATEGORIES } from "../content.config";
 
 const posts = await getCollection("blog", ({ data }) => !data.draft);
 posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const postsData = posts.map((p) => {
-  const mdxPath = path.join("src/content/blog", p.id, "index.mdx");
-  const raw = fs.existsSync(mdxPath) ? fs.readFileSync(mdxPath, "utf-8") : "";
-  const content = raw.replace(/^---[\s\S]*?---\n/, "").trim();
+  const parts = p.id.replace(/\\/g, "/").split("/");
   return {
-    slug: p.id,
+    slug: parts.length > 1 ? parts[parts.length - 2] : p.id,
     title: p.data.title,
     category: p.data.category,
     date: p.data.date.toISOString().slice(0, 10),
     description: p.data.description || "",
     tags: p.data.tags?.join(", ") || "",
     author: p.data.author || "",
-    content,
+    content: p.body || "",
   };
 });
 
-const CATEGORY_NAMES: Record<string, string> = {
-  psychologia: "Psychologia",
-  technologia: "Technologia",
-  ciekawostki: "Ciekawostki",
-  marketing: "Marketing",
+const postsJson = JSON.stringify(postsData);
+
+const NAMES: Record<string, string> = {
+  psychologia: "Psychologia", technologia: "Technologia", ciekawostki: "Ciekawostki", marketing: "Marketing",
 };
 ---
 
@@ -37,95 +32,60 @@ const CATEGORY_NAMES: Record<string, string> = {
     <h1 class="text-2xl font-bold mb-8">Edytor artykułów</h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left: article list -->
       <div class="lg:col-span-1">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-semibold">Artykuły ({posts.length})</h2>
           <button id="btn-new" class="text-sm bg-black text-white px-3 py-1.5 hover:bg-accent transition-colors cursor-pointer">+ Nowy</button>
         </div>
-
         <div class="space-y-1 max-h-[70vh] overflow-y-auto border border-border rounded p-2">
           {posts.map((post) => (
-            <button
-              class="w-full text-left px-3 py-2 text-sm hover:bg-stone-100 rounded transition-colors cursor-pointer"
-              data-slug={post.id}
-              data-title={post.data.title}
-            >
+            <button class="w-full text-left px-3 py-2 text-sm hover:bg-stone-100 rounded transition-colors cursor-pointer" data-slug={post.id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || post.id}>
               <span class="font-medium">{post.data.title}</span>
-              <span class="text-muted text-xs block">{post.data.date.toLocaleDateString("pl-PL")} &middot; {CATEGORY_NAMES[post.data.category]}</span>
+              <span class="text-muted text-xs block">{post.data.date.toLocaleDateString("pl-PL")} &middot; {NAMES[post.data.category]}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <!-- Right: editor -->
       <div class="lg:col-span-2">
         <form id="editor-form">
           <div class="mb-4">
             <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tytuł</label>
-            <input type="text" id="post-title" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="Tytuł artykułu" />
+            <input type="text" id="post-title" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
           </div>
-
           <div class="grid grid-cols-3 gap-4 mb-4">
             <div>
               <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Kategoria</label>
               <select id="post-category" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-white">
-                {CATEGORIES.map((cat) => (
-                  <option value={cat}>{CATEGORY_NAMES[cat]}</option>
-                ))}
+                {CATEGORIES.map((cat) => (<option value={cat}>{NAMES[cat]}</option>))}
               </select>
             </div>
-            <div>
-              <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Data</label>
-              <input type="date" id="post-date" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
-            </div>
-            <div>
-              <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Autor</label>
-              <input type="text" id="post-author" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" value="Tomek" />
-            </div>
+            <div><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Data</label><input type="date" id="post-date" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
+            <div><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Autor</label><input type="text" id="post-author" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" value="Tomek" /></div>
           </div>
-
-          <div class="mb-4">
-            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Opis (meta description)</label>
-            <input type="text" id="post-desc" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="Krótki opis" />
-          </div>
-
-          <div class="mb-4">
-            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Slug (nazwa katalogu)</label>
-            <input type="text" id="post-slug" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="moj-artykul" />
-          </div>
-
-          <div class="mb-4">
-            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tagi (po przecinku)</label>
-            <input type="text" id="post-tags" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="psychologia, biasy" />
-          </div>
-
-          <div class="mb-6">
-            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Treść (Markdown)</label>
-            <textarea id="post-content" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black font-mono" rows="20" placeholder="Pisz w Markdown..."></textarea>
-          </div>
-
+          <div class="mb-4"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Opis</label><input type="text" id="post-desc" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
+          <div class="mb-4"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Slug</label><input type="text" id="post-slug" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
+          <div class="mb-4"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tagi (po przecinku)</label><input type="text" id="post-tags" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
+          <div class="mb-6"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Treść (Markdown)</label><textarea id="post-content" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black font-mono" rows="30"></textarea></div>
           <div class="flex gap-3">
+            <button type="button" id="btn-save" class="bg-green-700 text-white text-sm px-6 py-2.5 hover:bg-green-800 transition-colors cursor-pointer">Zapisz</button>
             <button type="button" id="btn-download" class="bg-black text-white text-sm px-6 py-2.5 hover:bg-accent transition-colors cursor-pointer">Pobierz MDX</button>
-            <button type="button" id="btn-preview" class="border border-border text-sm px-6 py-2.5 hover:border-black transition-colors cursor-pointer">Podgląd</button>
+            <button type="button" id="btn-preview" class="border border-border text-sm px-6 py-2.5 hover:border-black transition-colors cursor-pointer">Podgląd w nowej karcie</button>
           </div>
         </form>
-
         <div id="preview-area" class="hidden mt-8 p-6 border border-border rounded prose-custom"></div>
       </div>
     </div>
   </div>
 </BaseLayout>
 
-<script type="application/json" id="posts-data">
-{JSON.stringify(postsData)}
-</script>
+<div id="posts-data" style="display:none" data-json={postsJson}></div>
 
 <script>
   import { marked } from "marked";
 
-  const POSTS_DATA = JSON.parse(document.getElementById("posts-data")!.textContent!);
-  
+  const POSTS_DATA = JSON.parse(document.getElementById("posts-data")!.dataset.json!);
+
   const slugEl = document.getElementById("post-slug") as HTMLInputElement;
   const titleEl = document.getElementById("post-title") as HTMLInputElement;
   const categoryEl = document.getElementById("post-category") as HTMLSelectElement;
@@ -135,11 +95,9 @@ const CATEGORY_NAMES: Record<string, string> = {
   const tagsEl = document.getElementById("post-tags") as HTMLInputElement;
   const contentEl = document.getElementById("post-content") as HTMLTextAreaElement;
   const previewArea = document.getElementById("preview-area")!;
-  const form = document.getElementById("editor-form") as HTMLFormElement;
 
   dateEl.value = new Date().toISOString().slice(0, 10);
 
-  // Click on article to load
   document.querySelectorAll("[data-slug]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const slug = (btn as HTMLElement).dataset.slug!;
@@ -157,30 +115,77 @@ const CATEGORY_NAMES: Record<string, string> = {
   });
 
   document.getElementById("btn-new")!.addEventListener("click", () => {
-    form.reset();
     slugEl.value = "";
     titleEl.value = "";
     contentEl.value = "";
+    descEl.value = "";
+    tagsEl.value = "";
     dateEl.value = new Date().toISOString().slice(0, 10);
     authorEl.value = "Tomek";
   });
 
   document.getElementById("btn-preview")!.addEventListener("click", () => {
-    previewArea.classList.toggle("hidden");
-    if (!previewArea.classList.contains("hidden")) {
-      previewArea.innerHTML = marked.parse(contentEl.value) as string;
-    }
+    const html = `<!DOCTYPE html>
+<html lang="pl">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${titleEl.value} | MindForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/src/styles/global.css">
+<link rel="stylesheet" href="/_astro/BaseLayout.CeunVzAf.css">
+<style>
+body { background: #fff; } 
+article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
+.prose-custom p { margin-bottom: 1.6em; line-height: 1.65; color: #333; font-size: 1rem; font-family: 'Montserrat', sans-serif; }
+.prose-custom p:first-of-type::first-letter { font-size: 4.5rem; float: left; line-height: 0.8; font-weight: 800; margin-right: 0.15em; margin-top: 0.05em; color: #111; font-family: 'Montserrat', sans-serif; }
+.prose-custom h2 { font-size: 1.8rem; font-weight: 600; margin: 2.2em 0 0.6em; color: #111; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 0.5em; }
+.prose-custom h2::before { content: ''; display: inline-block; width: 8px; height: 8px; background: #b9a38f; border-radius: 2px; flex-shrink: 0; }
+.prose-custom h3 { font-size: 1.2rem; font-weight: 800; margin: 1.8em 0 0.4em; text-transform: uppercase; letter-spacing: 0; color: #111; font-family: 'Montserrat', sans-serif; }
+.prose-custom blockquote { border-left: 3px solid #2d6a4f; margin: 2em 0; padding: 1em 1.5em; color: #555; font-style: italic; font-size: 1.1rem; background: #f0f5f0; }
+.prose-custom blockquote p { margin-bottom: 0; }
+.prose-custom ul, .prose-custom ol { margin: 0 0 1.5em; padding-left: 3.5em; line-height: 1.65; color: #333; font-family: 'Montserrat', sans-serif; font-size: 1rem; }
+.prose-custom ul { list-style: disc; }
+.prose-custom ol { list-style: decimal; }
+.prose-custom li { margin-bottom: 0.3em; }
+.prose-custom li::marker { color: #111; font-weight: 600; }
+.prose-custom table { width: 100%; border-collapse: collapse; margin: 2em 0; font-size: 0.9rem; }
+.prose-custom th, .prose-custom td { border: 1px solid #e5e5e5; padding: 0.7em 1em; text-align: left; }
+.prose-custom th { background: #f5f5f5; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #555; }
+.prose-custom code { font-size: 0.85em; background: #f5f5f4; padding: 0.15em 0.4em; border-radius: 3px; }
+.prose-custom pre { background: #1e1e1e; color: #e0e0e0; border-radius: 4px; padding: 1.2em 1.4em; overflow-x: auto; margin: 2em 0; font-size: 0.85rem; line-height: 1.6; }
+.prose-custom pre code { background: none; padding: 0; color: inherit; }
+.prose-custom a { color: #2563eb; text-decoration: none; }
+.prose-custom img { max-width: 100%; height: auto; }
+</style>
+</head>
+<body>
+<article>
+<header style="margin-bottom: 40px;">
+<a style="display: inline-block; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; padding: 4px 12px; background: #7c3aed; color: #fff; border-radius: 2px; margin-bottom: 24px; text-decoration: none;">${categoryEl.options[categoryEl.selectedIndex].text}</a>
+<h1 style="font-size: 3rem; font-weight: 700; line-height: 1.15; margin-bottom: 0.3rem; font-family: 'Montserrat', sans-serif;">${titleEl.value}</h1>
+<div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #78716c; margin-bottom: 16px;">
+<span>${authorEl.value}</span><span>&bull;</span><span>${dateEl.value}</span><span>&bull;</span><span>${Math.ceil(contentEl.value.length / 800)} min czytania</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #e5e5e5;">${tagsEl.value.split(",").filter(Boolean).map((t: string) => `<span style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #777; border: 1px solid #ddd; padding: 4px 12px;">${t.trim()}</span>`).join("")}</div>
+</header>
+<div class="prose-custom">${marked.parse(contentEl.value)}</div>
+</article>
+</body>
+</html>`;
+    const w = window.open("", "_blank");
+    if (w) { w.document.write(html); w.document.close(); }
   });
 
   document.getElementById("btn-download")!.addEventListener("click", () => {
     const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const tags = tagsEl.value.split(",").map((t) => `"${t.trim()}"`).filter(Boolean);
+    const tags = tagsEl.value.split(",").map((t) => t.trim()).filter(Boolean);
     const mdx = `---
 title: "${titleEl.value}"
 description: "${descEl.value}"
 date: ${dateEl.value}
 category: ${categoryEl.value}
-tags: [${tags.join(", ")}]
+tags: [${tags.map((t) => `"${t}"`).join(", ")}]
 author: "${authorEl.value}"
 draft: false
 ---
@@ -192,10 +197,41 @@ ${contentEl.value}`;
     const a = document.createElement("a");
     a.href = url;
     a.download = `index.mdx`;
-    
-    const text = `Zapisz plik jako: src/content/blog/${slug}/index.mdx\n\nDo tego samego katalogu wrzuć obrazki:\n- menu_image.jpg (do menu)\n\nPotem zrób rebuild: npm run build`;
-    alert(text);
     a.click();
     URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("btn-save")!.addEventListener("click", async () => {
+    const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const tags = tagsEl.value.split(",").map((t) => t.trim()).filter(Boolean);
+    const mdx = `---
+title: "${titleEl.value}"
+description: "${descEl.value}"
+date: ${dateEl.value}
+category: ${categoryEl.value}
+tags: [${tags.map((t) => `"${t}"`).join(", ")}]
+author: "${authorEl.value}"
+draft: false
+---
+
+${contentEl.value}`;
+
+    try {
+      const handle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
+      const blogDir = await handle.getDirectoryHandle("src").catch(() => null);
+      if (!blogDir) { alert("Wybierz główny katalog projektu (mindforge2)"); return; }
+      const contentDir = await blogDir.getDirectoryHandle("content").catch(() => null);
+      if (!contentDir) { alert("Nie znaleziono src/content/"); return; }
+      const blogContentDir = await contentDir.getDirectoryHandle("blog").catch(() => null);
+      if (!blogContentDir) { alert("Nie znaleziono src/content/blog/"); return; }
+      const articleDir = await blogContentDir.getDirectoryHandle(slug, { create: true });
+      const file = await articleDir.getFileHandle("index.mdx", { create: true });
+      const writable = await file.createWritable();
+      await writable.write(mdx);
+      await writable.close();
+      alert(`Zapisano: src/content/blog/${slug}/index.mdx`);
+    } catch (e: any) {
+      if (e.name !== "AbortError") alert("Błąd zapisu: " + e.message);
+    }
   });
 </script>

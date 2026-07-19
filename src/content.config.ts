@@ -5,7 +5,7 @@ export const CATEGORIES = ["psychologia", "technologia", "ciekawostki", "marketi
 export type Category = (typeof CATEGORIES)[number];
 
 const blog = defineCollection({
-  loader: glob({ base: "./src/content/blog", pattern: "**/*.mdx" }),
+  loader: glob({ base: "./src/content/blog", pattern: "**/*.mdx", retainBody: true }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
