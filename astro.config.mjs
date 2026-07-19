@@ -12,11 +12,6 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    server: {
-      watch: {
-        ignored: ["**/src/content/blog/**"],
-      },
-    },
   },
 
   adapter: node({
