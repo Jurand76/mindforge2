@@ -99,18 +99,22 @@ const NAMES: Record<string, string> = {
   dateEl.value = new Date().toISOString().slice(0, 10);
 
   document.querySelectorAll("[data-slug]").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       const slug = (btn as HTMLElement).dataset.slug!;
-      const data = POSTS_DATA.find((p: any) => p.slug === slug);
-      if (!data) return;
-      titleEl.value = data.title;
-      slugEl.value = data.slug;
-      categoryEl.value = data.category;
-      dateEl.value = data.date;
-      authorEl.value = data.author;
-      descEl.value = data.description;
-      tagsEl.value = data.tags;
-      contentEl.value = data.content;
+      history.replaceState(null, "", "/edytor");
+      try {
+        const resp = await fetch(`/api/article/${slug}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        titleEl.value = data.title;
+        slugEl.value = data.slug;
+        categoryEl.value = data.category;
+        dateEl.value = data.date;
+        authorEl.value = data.author;
+        descEl.value = data.description;
+        tagsEl.value = (data.tags || "").replace(/^\["?\]?$/, "").replace(/[\[\]"]/g, "");
+        contentEl.value = data.content;
+      } catch {}
     });
   });
 
@@ -120,7 +124,39 @@ const NAMES: Record<string, string> = {
     contentEl.value = "";
     descEl.value = "";
     tagsEl.value = "";
-    dateEl.value = new Date().toISOString().slice(0, 10);
+dateEl.value = new Date().toISOString().slice(0, 10);
+
+  // restore form after HMR reload — sessionStorage has exact state
+  const savedForm = sessionStorage.getItem("editor-form");
+  if (savedForm) {
+    try {
+      const d = JSON.parse(savedForm);
+      slugEl.value = d.slug || "";
+      titleEl.value = d.title || "";
+      categoryEl.value = d.category || "psychologia";
+      dateEl.value = d.date || "";
+      authorEl.value = d.author || "Tomek";
+      descEl.value = d.desc || "";
+      tagsEl.value = d.tags || "";
+      contentEl.value = d.content || "";
+      sessionStorage.removeItem("editor-form");
+    } catch {}
+  } else {
+    const hash2 = window.location.hash.slice(1);
+    if (hash2) {
+      const data = POSTS_DATA.find((p: any) => p.slug === hash2);
+      if (data) {
+        titleEl.value = data.title;
+        slugEl.value = data.slug;
+        categoryEl.value = data.category;
+        dateEl.value = data.date;
+        authorEl.value = data.author;
+        descEl.value = data.description;
+        tagsEl.value = (data.tags || "").replace(/^\["?\]?$/, "").replace(/[\[\]"]/g, "");
+        contentEl.value = data.content;
+      }
+    }
+  }
     authorEl.value = "Tomek";
   });
 
@@ -144,6 +180,7 @@ article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
 .prose-custom h3 { font-size: 1.2rem; font-weight: 800; margin: 1.8em 0 0.4em; text-transform: uppercase; letter-spacing: 0; color: #111; font-family: 'Montserrat', sans-serif; }
 .prose-custom blockquote { border-left: 3px solid #2d6a4f; margin: 2em 0; padding: 1em 1.5em; color: #555; font-style: italic; font-size: 1.1rem; background: #f0f5f0; }
 .prose-custom blockquote p { margin-bottom: 0; }
+.prose-custom blockquote p::first-letter { font-size: inherit; float: none; font-weight: inherit; line-height: inherit; margin: 0; color: inherit; }
 .prose-custom ul, .prose-custom ol { margin: 0 0 1.5em; padding-left: 3.5em; line-height: 1.65; color: #333; font-family: 'Montserrat', sans-serif; font-size: 1rem; }
 .prose-custom ul { list-style: disc; }
 .prose-custom ol { list-style: decimal; }
@@ -155,8 +192,19 @@ article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
 .prose-custom code { font-size: 0.85em; background: #f5f5f4; padding: 0.15em 0.4em; border-radius: 3px; }
 .prose-custom pre { background: #1e1e1e; color: #e0e0e0; border-radius: 4px; padding: 1.2em 1.4em; overflow-x: auto; margin: 2em 0; font-size: 0.85rem; line-height: 1.6; }
 .prose-custom pre code { background: none; padding: 0; color: inherit; }
+.prose-custom strong { font-weight: 700; color: #111; }
+.prose-custom em { font-style: italic; }
 .prose-custom a { color: #2563eb; text-decoration: none; }
 .prose-custom img { max-width: 100%; height: auto; }
+.prose-custom figure { margin: 2em 0; }
+.prose-custom figure img { display: block; max-width: 100%; height: auto; }
+.prose-custom figcaption { font-size: 0.8rem; font-weight: 600; color: #444; margin-top: 0.4em; text-align: center; }
+.prose-custom .img-left { float: left; margin: 0.5em 1.5em 1em 0; max-width: 45%; display: table; }
+.prose-custom .img-left img { width: 100%; }
+.prose-custom .img-right { float: right; margin: 0.5em 0 1em 1.5em; max-width: 45%; display: table; }
+.prose-custom .img-right img { width: 100%; }
+.prose-custom .img-center { text-align: center; width: 100%; }
+.prose-custom .img-center img { display: inline-block; max-width: 100%; }
 </style>
 </head>
 <body>
@@ -169,7 +217,28 @@ article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
 </div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #e5e5e5;">${tagsEl.value.split(",").filter(Boolean).map((t: string) => `<span style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #777; border: 1px solid #ddd; padding: 4px 12px;">${t.trim()}</span>`).join("")}</div>
 </header>
-<div class="prose-custom">${marked.parse(contentEl.value)}</div>
+<div class="prose-custom">${(() => {
+      let raw = contentEl.value;
+      // Step 1: wrap custom image syntax in blank lines so marked treats as block HTML
+      raw = raw.replace(/^(\!\[\]\("[^"]+",\s*"[^"]*",\s*"[^"]*",\s*(?:true|false)\))$/gm, "\n$1\n");
+      // Step 2: replace custom image syntax with HTML before markdown parsing
+      raw = raw.replace(/!\[\]\("([^"]+)",\s*"([^"]*)",\s*"([^"]*)",\s*(true|false)\)/g, (_: string, src: string, align: string, caption: string, float: string) => {
+        const fixedSrc = src.replace(/^\.\//, `/articles/${slugEl.value}/`).replace(/^(?!\/|http)/, `/articles/${slugEl.value}/`);
+        const capHtml = caption ? `<div style="text-align: center; font-size: 0.8rem; font-weight: 600; color: #444; margin-top: 0.4em;">${caption}</div>` : "";
+        if (float === "true") {
+          const fl = align === "right" ? "right" : "left";
+          const mg = align === "right" ? "margin-left: 1.5em;" : "margin-right: 1.5em;";
+          return `<div style="float: ${fl}; max-width: 45%; ${mg} margin-bottom: 1.5em;"><img src="${fixedSrc}" alt="${caption}" style="width: 100%; display: block;" />${capHtml}</div>`;
+        } else {
+          const mg = align === "right" ? "margin-left: auto;" : align === "left" ? "margin-right: auto;" : "margin: 0 auto;";
+          return `<div style="display: table; ${mg} margin-bottom: 1.5em;"><img src="${fixedSrc}" alt="${caption}" style="display: block; max-width: 100%;" />${capHtml}</div>`;
+        }
+      });
+      let html = marked.parse(raw) as string;
+      html = html.replace(/src="\.\//g, `src="/articles/${slugEl.value}/`);
+      html = html.replace(/src="(?!\/|http|data)([^"]+)"/g, `src="/articles/${slugEl.value}/$1"`);
+      return html;
+    })()}</div>
 </article>
 </body>
 </html>`;
@@ -180,13 +249,14 @@ article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
   document.getElementById("btn-download")!.addEventListener("click", () => {
     const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const tags = tagsEl.value.split(",").map((t) => t.trim()).filter(Boolean);
+    const esc = (s: string) => s.replace(/"/g, '\\"');
     const mdx = `---
-title: "${titleEl.value}"
-description: "${descEl.value}"
+title: ${escYAML(titleEl.value)}
+description: ${escYAML(descEl.value)}
 date: ${dateEl.value}
 category: ${categoryEl.value}
 tags: [${tags.map((t) => `"${t}"`).join(", ")}]
-author: "${authorEl.value}"
+author: ${escYAML(authorEl.value)}
 draft: false
 ---
 
@@ -201,37 +271,57 @@ ${contentEl.value}`;
     URL.revokeObjectURL(url);
   });
 
-  document.getElementById("btn-save")!.addEventListener("click", async () => {
+  document.getElementById("btn-save")!.addEventListener("click", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const tags = tagsEl.value.split(",").map((t) => t.trim()).filter(Boolean);
+    const escYAML = (s: string) => "'" + s.replace(/'/g, "''") + "'";
     const mdx = `---
-title: "${titleEl.value}"
-description: "${descEl.value}"
+title: ${escYAML(titleEl.value)}
+description: ${escYAML(descEl.value)}
 date: ${dateEl.value}
 category: ${categoryEl.value}
 tags: [${tags.map((t) => `"${t}"`).join(", ")}]
-author: "${authorEl.value}"
+author: ${escYAML(authorEl.value)}
 draft: false
 ---
 
 ${contentEl.value}`;
 
+    window.location.hash = slug;
+    sessionStorage.setItem("editor-form", JSON.stringify({
+      slug, title: titleEl.value, category: categoryEl.value,
+      date: dateEl.value, author: authorEl.value, desc: descEl.value,
+      tags: tagsEl.value, content: contentEl.value
+    }));
+
     try {
-      const handle = await (window as any).showDirectoryPicker({ mode: "readwrite" });
-      const blogDir = await handle.getDirectoryHandle("src").catch(() => null);
-      if (!blogDir) { alert("Wybierz główny katalog projektu (mindforge2)"); return; }
-      const contentDir = await blogDir.getDirectoryHandle("content").catch(() => null);
-      if (!contentDir) { alert("Nie znaleziono src/content/"); return; }
-      const blogContentDir = await contentDir.getDirectoryHandle("blog").catch(() => null);
-      if (!blogContentDir) { alert("Nie znaleziono src/content/blog/"); return; }
-      const articleDir = await blogContentDir.getDirectoryHandle(slug, { create: true });
-      const file = await articleDir.getFileHandle("index.mdx", { create: true });
-      const writable = await file.createWritable();
-      await writable.write(mdx);
-      await writable.close();
-      alert(`Zapisano: src/content/blog/${slug}/index.mdx`);
+      const resp = await fetch("/api/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, mdx }),
+      });
+      if (resp.ok) {
+        const d = await resp.json();
+        // update in-memory data so re-clicking shows changes
+        const idx = POSTS_DATA.findIndex((p: any) => p.slug === slug);
+        if (idx >= 0) {
+          POSTS_DATA[idx] = { ...POSTS_DATA[idx], title: titleEl.value, description: descEl.value, category: categoryEl.value, date: dateEl.value, author: authorEl.value, tags: tagsEl.value, content: contentEl.value };
+        } else {
+          POSTS_DATA.push({ slug, title: titleEl.value, description: descEl.value, category: categoryEl.value, date: dateEl.value, author: authorEl.value, tags: tagsEl.value, content: contentEl.value });
+        }
+        const msg = document.createElement("div");
+        msg.className = "fixed bottom-4 right-4 bg-green-700 text-white px-4 py-2 rounded text-sm z-50";
+        msg.textContent = d.message || "Zapisano!";
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 3000);
+      } else {
+        const data = await resp.json();
+        alert("Błąd: " + (data.error || "Nieznany"));
+      }
     } catch (e: any) {
-      if (e.name !== "AbortError") alert("Błąd zapisu: " + e.message);
+      alert("Błąd zapisu: " + e.message);
     }
   });
 </script>

@@ -1,8 +1,9 @@
 ---
-import { getCollection, render } from "astro:content";
+import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import type { Category } from "../../content.config";
 import { CATEGORY_COLORS, CATEGORY_NAMES, CATEGORY_IMAGES } from "../../data/content";
+import { marked } from "marked";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
@@ -13,24 +14,38 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
 const { title, description, date, category, tags, author } = post.data;
 const catColor = CATEGORY_COLORS[category] || "#2563eb";
-const bannerImage = CATEGORY_IMAGES[category];
+const topImg = `/articles/${post.id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || post.id}/top_image.jpg`;
+const fallbackImg = CATEGORY_IMAGES[category];
+
+const pslug = post.id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || post.id;
+let body = post.body || "";
+body = body.replace(/!\[\]\("([^"]+)",\s*"([^"]*)",\s*"([^"]*)",\s*(true|false)\)/g,
+  (_, src, al, cap, fl) => {
+    const psrc = src.replace(/^\.\//, `/articles/${pslug}/`).replace(/^(?!\/|http)/, `/articles/${pslug}/`);
+    const c = cap ? `<figcaption>${cap}</figcaption>` : "";
+    const w = fl === "true";
+    if (w) return `<div style="float:${al==='right'?'right':'left'};max-width:45%;margin-${al==='right'?'left':'right'}:1.5em;margin-bottom:1.5em;"><img src="${psrc}" alt="${cap}" style="width:100%;display:block;" />${c}</div>`;
+    const mg = al === "right" ? "margin-left:auto;" : al === "left" ? "margin-right:auto;" : "margin:0 auto;";
+    return `<div style="display:table;${mg}margin-bottom:1.5em;"><img src="${psrc}" alt="${cap}" style="display:block;max-width:100%;" />${c}</div>`;
+  });
+body = body.replace(/!\[([^\]]*)\]\(\.?\/([^)]+)\)/g, (_, alt, s) => `<img src="/articles/${pslug}/${s}" alt="${alt}" />`);
+const articleHtml = marked.parse(body) as string;
 ---
 
 <BaseLayout title={`${title} | MindForge`} description={description}>
   <article class="max-w-[1600px] mx-auto px-4 md:px-8 pt-[30px] pb-12 md:pb-20" style="background: #fff;">
 
-    <div class="relative overflow-hidden mb-8" style="aspect-ratio: 21/9; width: 100%;">
+    <div class="relative overflow-hidden mb-8" style="width: 100%;">
       <img
-        src={bannerImage}
+        src={topImg}
         alt={title}
-        class="w-full h-full object-cover"
+        class="w-full object-contain"
         loading="eager"
         decoding="async"
+        onerror={`this.onerror=null;this.src='${fallbackImg}'`}
       />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
       <div class="absolute bottom-6 left-6">
         <span
           class="inline-block text-[10px] tracking-[0.15em] uppercase font-semibold px-3 py-1"
@@ -67,7 +82,7 @@ const bannerImage = CATEGORY_IMAGES[category];
       </header>
 
       <div class="prose-custom">
-        <Content />
+        <div class="prose-custom" set:html={articleHtml} />
       </div>
 
       <footer class="mt-20 pt-8 border-t border-[#e5e5e5] flex justify-between items-center">
@@ -223,6 +238,34 @@ const bannerImage = CATEGORY_IMAGES[category];
   .prose-custom :global(img) {
     max-width: 100%;
     height: auto;
+  }
+  .prose-custom :global(figure) {
+    margin: 2em 0;
+  }
+  .prose-custom :global(figure img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  .prose-custom :global(figcaption) {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #444;
+    margin-top: 0.4em;
+    text-align: center;
+  }
+  .prose-custom :global(.img-left) {
+    float: left;
+    margin: 0.5em 1.5em 1em 0;
+    max-width: 45%;
+  }
+  .prose-custom :global(.img-right) {
+    float: right;
+    margin: 0.5em 0 1em 1.5em;
+    max-width: 45%;
+  }
+  .prose-custom :global(.img-center) {
+    text-align: center;
   }
   .prose-custom :global(strong) {
     font-weight: 600;
