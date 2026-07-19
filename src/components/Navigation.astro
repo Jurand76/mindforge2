@@ -1,12 +1,24 @@
 <nav style="background-color: #060606; border-top: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2);">
-  <ul class="flex justify-center gap-4 md:gap-6 py-3 overflow-x-auto px-4">
-    <li><a href="/" class="nav-link">Home</a></li>
-    <li><a href="/kategoria/psychologia" class="nav-link">Psychologia</a></li>
-    <li><a href="/kategoria/technologia" class="nav-link">Technologia</a></li>
-    <li><a href="/kategoria/ciekawostki" class="nav-link">Ciekawostki</a></li>
-    <li><a href="/kategoria/marketing" class="nav-link">Marketing</a></li>
-    <li><a href="/o-mnie" class="nav-link">O mnie</a></li>
-  </ul>
+  <div class="max-w-[1400px] mx-auto px-4">
+    <!-- Hamburger toggle -->
+    <input type="checkbox" id="menu-toggle" class="hidden peer" />
+    <label for="menu-toggle" class="md:hidden flex items-center justify-end py-3 cursor-pointer">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <line x1="4" y1="6" x2="20" y2="6" />
+        <line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="4" y1="18" x2="20" y2="18" />
+      </svg>
+    </label>
+
+    <ul class="hidden md:flex justify-center gap-4 md:gap-6 py-3 overflow-x-auto peer-checked:flex peer-checked:flex-col peer-checked:items-center peer-checked:pb-4 peer-checked:pt-0">
+      <li><a href="/" class="nav-link">Home</a></li>
+      <li><a href="/kategoria/psychologia" class="nav-link">Psychologia</a></li>
+      <li><a href="/kategoria/technologia" class="nav-link">Technologia</a></li>
+      <li><a href="/kategoria/ciekawostki" class="nav-link">Ciekawostki</a></li>
+      <li><a href="/kategoria/marketing" class="nav-link">Marketing</a></li>
+      <li><a href="/o-mnie" class="nav-link">O mnie</a></li>
+    </ul>
+  </div>
 </nav>
 
 <style>
@@ -20,6 +32,7 @@
     padding: 0.375rem 0.75rem;
     border-radius: 2px;
     transition: background-color 0.15s;
+    display: block;
   }
   .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
