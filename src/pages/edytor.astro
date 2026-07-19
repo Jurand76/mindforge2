@@ -1,0 +1,201 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { CATEGORIES, type Category } from "../content.config";
+import fs from "fs";
+import path from "path";
+
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const postsData = posts.map((p) => {
+  const mdxPath = path.join("src/content/blog", p.id, "index.mdx");
+  const raw = fs.existsSync(mdxPath) ? fs.readFileSync(mdxPath, "utf-8") : "";
+  const content = raw.replace(/^---[\s\S]*?---\n/, "").trim();
+  return {
+    slug: p.id,
+    title: p.data.title,
+    category: p.data.category,
+    date: p.data.date.toISOString().slice(0, 10),
+    description: p.data.description || "",
+    tags: p.data.tags?.join(", ") || "",
+    author: p.data.author || "",
+    content,
+  };
+});
+
+const CATEGORY_NAMES: Record<string, string> = {
+  psychologia: "Psychologia",
+  technologia: "Technologia",
+  ciekawostki: "Ciekawostki",
+  marketing: "Marketing",
+};
+---
+
+<BaseLayout title="Edytor | MindForge">
+  <div class="max-w-[1600px] mx-auto px-4 md:px-8 py-8" style="background: #fff;">
+    <h1 class="text-2xl font-bold mb-8">Edytor artykułów</h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left: article list -->
+      <div class="lg:col-span-1">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold">Artykuły ({posts.length})</h2>
+          <button id="btn-new" class="text-sm bg-black text-white px-3 py-1.5 hover:bg-accent transition-colors cursor-pointer">+ Nowy</button>
+        </div>
+
+        <div class="space-y-1 max-h-[70vh] overflow-y-auto border border-border rounded p-2">
+          {posts.map((post) => (
+            <button
+              class="w-full text-left px-3 py-2 text-sm hover:bg-stone-100 rounded transition-colors cursor-pointer"
+              data-slug={post.id}
+              data-title={post.data.title}
+            >
+              <span class="font-medium">{post.data.title}</span>
+              <span class="text-muted text-xs block">{post.data.date.toLocaleDateString("pl-PL")} &middot; {CATEGORY_NAMES[post.data.category]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <!-- Right: editor -->
+      <div class="lg:col-span-2">
+        <form id="editor-form">
+          <div class="mb-4">
+            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tytuł</label>
+            <input type="text" id="post-title" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="Tytuł artykułu" />
+          </div>
+
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div>
+              <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Kategoria</label>
+              <select id="post-category" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black bg-white">
+                {CATEGORIES.map((cat) => (
+                  <option value={cat}>{CATEGORY_NAMES[cat]}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Data</label>
+              <input type="date" id="post-date" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
+            </div>
+            <div>
+              <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Autor</label>
+              <input type="text" id="post-author" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" value="Tomek" />
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Opis (meta description)</label>
+            <input type="text" id="post-desc" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="Krótki opis" />
+          </div>
+
+          <div class="mb-4">
+            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Slug (nazwa katalogu)</label>
+            <input type="text" id="post-slug" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="moj-artykul" />
+          </div>
+
+          <div class="mb-4">
+            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tagi (po przecinku)</label>
+            <input type="text" id="post-tags" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" placeholder="psychologia, biasy" />
+          </div>
+
+          <div class="mb-6">
+            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Treść (Markdown)</label>
+            <textarea id="post-content" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black font-mono" rows="20" placeholder="Pisz w Markdown..."></textarea>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" id="btn-download" class="bg-black text-white text-sm px-6 py-2.5 hover:bg-accent transition-colors cursor-pointer">Pobierz MDX</button>
+            <button type="button" id="btn-preview" class="border border-border text-sm px-6 py-2.5 hover:border-black transition-colors cursor-pointer">Podgląd</button>
+          </div>
+        </form>
+
+        <div id="preview-area" class="hidden mt-8 p-6 border border-border rounded prose-custom"></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script type="application/json" id="posts-data">
+{JSON.stringify(postsData)}
+</script>
+
+<script>
+  import { marked } from "marked";
+
+  const POSTS_DATA = JSON.parse(document.getElementById("posts-data")!.textContent!);
+  
+  const slugEl = document.getElementById("post-slug") as HTMLInputElement;
+  const titleEl = document.getElementById("post-title") as HTMLInputElement;
+  const categoryEl = document.getElementById("post-category") as HTMLSelectElement;
+  const dateEl = document.getElementById("post-date") as HTMLInputElement;
+  const authorEl = document.getElementById("post-author") as HTMLInputElement;
+  const descEl = document.getElementById("post-desc") as HTMLInputElement;
+  const tagsEl = document.getElementById("post-tags") as HTMLInputElement;
+  const contentEl = document.getElementById("post-content") as HTMLTextAreaElement;
+  const previewArea = document.getElementById("preview-area")!;
+  const form = document.getElementById("editor-form") as HTMLFormElement;
+
+  dateEl.value = new Date().toISOString().slice(0, 10);
+
+  // Click on article to load
+  document.querySelectorAll("[data-slug]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const slug = (btn as HTMLElement).dataset.slug!;
+      const data = POSTS_DATA.find((p: any) => p.slug === slug);
+      if (!data) return;
+      titleEl.value = data.title;
+      slugEl.value = data.slug;
+      categoryEl.value = data.category;
+      dateEl.value = data.date;
+      authorEl.value = data.author;
+      descEl.value = data.description;
+      tagsEl.value = data.tags;
+      contentEl.value = data.content;
+    });
+  });
+
+  document.getElementById("btn-new")!.addEventListener("click", () => {
+    form.reset();
+    slugEl.value = "";
+    titleEl.value = "";
+    contentEl.value = "";
+    dateEl.value = new Date().toISOString().slice(0, 10);
+    authorEl.value = "Tomek";
+  });
+
+  document.getElementById("btn-preview")!.addEventListener("click", () => {
+    previewArea.classList.toggle("hidden");
+    if (!previewArea.classList.contains("hidden")) {
+      previewArea.innerHTML = marked.parse(contentEl.value) as string;
+    }
+  });
+
+  document.getElementById("btn-download")!.addEventListener("click", () => {
+    const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const tags = tagsEl.value.split(",").map((t) => `"${t.trim()}"`).filter(Boolean);
+    const mdx = `---
+title: "${titleEl.value}"
+description: "${descEl.value}"
+date: ${dateEl.value}
+category: ${categoryEl.value}
+tags: [${tags.join(", ")}]
+author: "${authorEl.value}"
+draft: false
+---
+
+${contentEl.value}`;
+
+    const blob = new Blob([mdx], { type: "text/mdx" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `index.mdx`;
+    
+    const text = `Zapisz plik jako: src/content/blog/${slug}/index.mdx\n\nDo tego samego katalogu wrzuć obrazki:\n- menu_image.jpg (do menu)\n\nPotem zrób rebuild: npm run build`;
+    alert(text);
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+</script>

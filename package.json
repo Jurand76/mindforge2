@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "predev": "node scripts/copy-images.mjs",
+    "build": "node scripts/copy-images.mjs && astro build",
     "preview": "astro preview"
   },
   "dependencies": {
@@ -13,6 +14,8 @@
     "@astrojs/rss": "^4.0.19",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.1",
+    "easymde": "^2.21.0",
+    "marked": "^18.0.6",
     "tailwindcss": "^4.3.3"
   }
 }
