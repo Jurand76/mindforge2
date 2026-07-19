@@ -34,7 +34,7 @@ const filtered = stories.filter((s) => !excludeSlugs.includes(s.slug));
         <a
         href={`/blog/${story.slug}`}
         class="group block relative overflow-hidden"
-        style="aspect-ratio: 3/4; box-shadow: 0 0 8px rgba(0,0,0,0.6);"
+        style="aspect-ratio: 3/4;"
       >
         <img
           src={story.image}
@@ -43,12 +43,11 @@ const filtered = stories.filter((s) => !excludeSlugs.includes(s.slug));
           loading="lazy"
           decoding="async"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent flex flex-col justify-end" style="padding: 0;">
-          <div class="p-3 flex flex-col justify-start overflow-hidden" style="background: rgba(0,0,0,0.5); height: 6rem;">
-            <h3 class="text-white leading-tight text-sm line-clamp-2" style="margin-bottom: 0.4rem;">
+        <div class="absolute inset-0 flex flex-col justify-end z-10" style="padding: 1.5rem;">
+          <h3 class="text-white leading-tight text-sm" style="margin-bottom: 0.2rem; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
             {story.title}
           </h3>
-          <p class="text-white/70 text-xs leading-snug line-clamp-2 hidden sm:block">
+          <p class="text-white/80 text-xs leading-snug line-clamp-2 hidden sm:block" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
             {story.description}
           </p>
         </div>
@@ -56,9 +55,9 @@ const filtered = stories.filter((s) => !excludeSlugs.includes(s.slug));
           class="absolute top-3 left-3 text-[10px] tracking-[0.15em] uppercase font-semibold text-white"
           style={`background-color: ${CATEGORY_COLORS[story.category]}; padding: 0.25rem 0.6rem; border-radius: 2px;`}
         >
-          {CATEGORY_NAMES[story.category]}
-        </span>
-        </div>
+{CATEGORY_NAMES[story.category]}
+          </span>
+          <img src="/images/ramka_4.png" alt="" class="absolute inset-0 w-full h-full pointer-events-none z-20" loading="lazy" />
       </a>
       </div>
     ))}

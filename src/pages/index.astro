@@ -17,7 +17,7 @@ const toArticle = (entry: typeof allPosts[number]): Article | null => {
     title: entry.data.title,
     description: entry.data.description || "",
     date: entry.data.date.toISOString().slice(0, 10),
-    image: CATEGORY_IMAGES[entry.data.category] || CATEGORY_IMAGES.psychologia,
+    image: `/articles/${entry.id}/menu_image.jpg`,
   };
 };
 

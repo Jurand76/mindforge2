@@ -14,7 +14,7 @@ const catColor = CATEGORY_COLORS[featured.category];
 <section class="max-w-[1400px] mx-auto px-4 md:px-8 pt-12 pb-0" style="background: #f0f0f0;">
   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-fr" style="min-height: 500px;">
     <!-- Large -->
-    <div class="col-span-2 row-span-2">
+    <div class="col-span-2 row-span-2 lg:aspect-square">
       <a
         href={`/blog/${featured.slug}`}
         class="group relative block overflow-hidden h-full"
@@ -49,7 +49,7 @@ const catColor = CATEGORY_COLORS[featured.category];
     {sideStories.map((story) => {
       const c = CATEGORY_COLORS[story.category];
       return (
-        <div>
+        <div class="lg:aspect-square">
           <a
             href={`/blog/${story.slug}`}
             class="group relative block overflow-hidden h-full"
