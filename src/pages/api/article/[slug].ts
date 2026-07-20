@@ -11,7 +11,7 @@ export const GET: APIRoute = async ({ params }) => {
   const mdxPath = path.join(process.cwd(), "src", "content", "blog", slug, "index.mdx");
   if (!fs.existsSync(mdxPath)) return new Response("Not found", { status: 404 });
 
-  const raw = fs.readFileSync(mdxPath, "utf-8");
+  const raw = fs.readFileSync(mdxPath, "utf-8").replace(/^\uFEFF/, "").replace(/^\n+/, "");
   const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)/);
   if (!fmMatch) return new Response(JSON.stringify({ content: raw }), { status: 200 });
 

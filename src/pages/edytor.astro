@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { CATEGORIES } from "../content.config";
+import "easymde/dist/easymde.min.css";
 
 const posts = await getCollection("blog", ({ data }) => !data.draft);
 posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
@@ -29,12 +30,12 @@ const NAMES: Record<string, string> = {
 
 <BaseLayout title="Edytor | MindForge">
   <div class="max-w-[1600px] mx-auto px-4 md:px-8 py-8" style="background: #fff;">
-    <h1 class="text-2xl font-bold mb-8">Edytor artykułów</h1>
+    <h1 class="text-2xl font-bold mb-8">Edytor artykulow</h1>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
       <div class="lg:col-span-1">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">Artykuły ({posts.length})</h2>
+          <h2 class="text-lg font-semibold">Artykuly ({posts.length})</h2>
           <button id="btn-new" class="text-sm bg-black text-white px-3 py-1.5 hover:bg-accent transition-colors cursor-pointer">+ Nowy</button>
         </div>
         <div class="space-y-1 max-h-[70vh] overflow-y-auto border border-border rounded p-2">
@@ -47,10 +48,10 @@ const NAMES: Record<string, string> = {
         </div>
       </div>
 
-      <div class="lg:col-span-2">
+      <div class="lg:col-span-4">
         <form id="editor-form">
           <div class="mb-4">
-            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tytuł</label>
+            <label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tytul</label>
             <input type="text" id="post-title" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" />
           </div>
           <div class="grid grid-cols-3 gap-4 mb-4">
@@ -66,14 +67,47 @@ const NAMES: Record<string, string> = {
           <div class="mb-4"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Opis</label><input type="text" id="post-desc" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
           <div class="mb-4"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Slug</label><input type="text" id="post-slug" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
           <div class="mb-4"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tagi (po przecinku)</label><input type="text" id="post-tags" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black" /></div>
-          <div class="mb-6"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Treść (Markdown)</label><textarea id="post-content" class="w-full border border-border px-3 py-2 text-sm focus:outline-none focus:border-black font-mono" rows="30"></textarea></div>
-          <div class="flex gap-3">
+          <div class="mb-6"><label class="text-xs uppercase tracking-wide text-muted font-medium mb-1 block">Tresc (Markdown)</label><textarea id="post-content"></textarea></div>
+          <div class="flex gap-3 mb-4">
             <button type="button" id="btn-save" class="bg-green-700 text-white text-sm px-6 py-2.5 hover:bg-green-800 transition-colors cursor-pointer">Zapisz</button>
             <button type="button" id="btn-download" class="bg-black text-white text-sm px-6 py-2.5 hover:bg-accent transition-colors cursor-pointer">Pobierz MDX</button>
-            <button type="button" id="btn-preview" class="border border-border text-sm px-6 py-2.5 hover:border-black transition-colors cursor-pointer">Podgląd w nowej karcie</button>
+            <button type="button" id="btn-preview" class="border border-border text-sm px-6 py-2.5 hover:border-black transition-colors cursor-pointer">Podglad w nowej karcie</button>
           </div>
         </form>
-        <div id="preview-area" class="hidden mt-8 p-6 border border-border rounded prose-custom"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- custom image modal -->
+  <div id="custom-img-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:24px; border-radius:8px; width:420px; box-shadow:0 10px 40px rgba(0,0,0,0.2);">
+      <h3 style="font-size:1rem; font-weight:600; margin-bottom:16px;">Wstaw obrazek (format MindForge)</h3>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px; text-transform:uppercase; color:#666; display:block; margin-bottom:4px;">Sciezka do obrazka</label>
+        <input id="ci-src" type="text" placeholder="np. ./img.jpg lub /articles/slug/img.jpg" style="width:100%; border:1px solid #ddd; padding:6px 10px; font-size:13px; border-radius:4px;" />
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px; text-transform:uppercase; color:#666; display:block; margin-bottom:4px;">Wyrownanie</label>
+        <select id="ci-align" style="width:100%; border:1px solid #ddd; padding:6px 10px; font-size:13px; border-radius:4px; background:#fff;">
+          <option value="left">Lewo</option>
+          <option value="center">Srodek</option>
+          <option value="right">Prawo</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:11px; text-transform:uppercase; color:#666; display:block; margin-bottom:4px;">Podpis</label>
+        <input id="ci-caption" type="text" placeholder="np. Opis obrazka" style="width:100%; border:1px solid #ddd; padding:6px 10px; font-size:13px; border-radius:4px;" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="font-size:11px; text-transform:uppercase; color:#666; display:block; margin-bottom:4px;">Oplywa tekstem (float)</label>
+        <select id="ci-float" style="width:100%; border:1px solid #ddd; padding:6px 10px; font-size:13px; border-radius:4px; background:#fff;">
+          <option value="false">Nie</option>
+          <option value="true">Tak</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button id="ci-cancel" type="button" style="border:1px solid #ddd; background:#fff; padding:6px 16px; font-size:13px; border-radius:4px; cursor:pointer;">Anuluj</button>
+        <button id="ci-insert" type="button" style="border:none; background:#000; color:#fff; padding:6px 16px; font-size:13px; border-radius:4px; cursor:pointer;">Wstaw</button>
       </div>
     </div>
   </div>
@@ -81,7 +115,24 @@ const NAMES: Record<string, string> = {
 
 <div id="posts-data" style="display:none" data-json={postsJson}></div>
 
+<style>
+  .editor-toolbar { border: 1px solid #e5e5e5 !important; border-bottom: none !important; border-radius: 0 !important; }
+  .editor-toolbar button { color: #555 !important; }
+  .editor-toolbar button:hover, .editor-toolbar button.active { background: #f0f0f0 !important; border-color: #ccc !important; }
+  .CodeMirror { border: 1px solid #e5e5e5 !important; border-radius: 0 !important; font-size: 14px; min-height: 450px; }
+  .editor-preview { border: 1px solid #e5e5e5 !important; border-left: none !important; }
+  .editor-statusbar { border: 1px solid #e5e5e5 !important; border-top: none !important; }
+  .editor-preview img { max-width: 100%; }
+  .editor-preview p::first-letter,
+  .editor-preview li::first-letter,
+  .editor-preview h1::first-letter,
+  .editor-preview h2::first-letter,
+  .editor-preview h3::first-letter { all: unset; }
+  .cm-spell-error:not(textarea) { background: rgba(255,0,0,0.1) !important; }
+</style>
+
 <script>
+  import EasyMDE from "easymde";
   import { marked } from "marked";
 
   const POSTS_DATA = JSON.parse(document.getElementById("posts-data")!.dataset.json!);
@@ -93,15 +144,133 @@ const NAMES: Record<string, string> = {
   const authorEl = document.getElementById("post-author") as HTMLInputElement;
   const descEl = document.getElementById("post-desc") as HTMLInputElement;
   const tagsEl = document.getElementById("post-tags") as HTMLInputElement;
-  const contentEl = document.getElementById("post-content") as HTMLTextAreaElement;
-  const previewArea = document.getElementById("preview-area")!;
 
   dateEl.value = new Date().toISOString().slice(0, 10);
 
+  function currentSlug(): string {
+    return slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  }
+
+  function renderCustomImages(raw: string, slug: string): string {
+    raw = raw.replace(/^(\!\[\]\("[^"]+",\s*"[^"]*",\s*"[^"]*",\s*(?:true|false)\))$/gm, "\n$1\n");
+    raw = raw.replace(/!\[\]\("([^"]+)",\s*"([^"]*)",\s*"([^"]*)",\s*(true|false)\)/g, (_: string, src: string, align: string, caption: string, float: string) => {
+      const fixedSrc = src.replace(/^\.\//, `/articles/${slug}/`).replace(/^(?!\/|http)/, `/articles/${slug}/`);
+      const capHtml = caption ? `<div style="text-align:center;font-size:0.8rem;font-weight:600;color:#444;margin-top:0.4em;">${caption}</div>` : "";
+      if (float === "true") {
+        const fl = align === "right" ? "right" : "left";
+        const mg = align === "right" ? "margin-left:1.5em;" : "margin-right:1.5em;";
+        return `<div style="float:${fl};max-width:45%;${mg}margin-bottom:1.5em;"><img src="${fixedSrc}" alt="${caption}" style="width:100%;display:block;" />${capHtml}</div>`;
+      } else {
+        const mg = align === "right" ? "margin-left:auto;" : align === "left" ? "margin-right:auto;" : "margin:0 auto;";
+        return `<div style="display:table;${mg}margin-bottom:1.5em;"><img src="${fixedSrc}" alt="${caption}" style="display:block;max-width:100%;" />${capHtml}</div>`;
+      }
+    });
+    return raw;
+  }
+
+  const easyMDE = new EasyMDE({
+    element: document.getElementById("post-content")!,
+    spellChecker: false,
+    status: ["lines", "words", "cursor"],
+    maxHeight: "1000px",
+    placeholder: "Pisz w Markdown... uzywaj toolbaru do formatowania, przeciagnij obrazki by je wkleic.",
+    promptURLs: true,
+    uploadImage: true,
+    imageUploadFunction: (file: File, onSuccess: (url: string) => void, onError: (msg: string) => void) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      formData.append("slug", currentSlug());
+      fetch("/api/upload-image", { method: "POST", body: formData })
+        .then(r => r.json())
+        .then(data => {
+          if (data.error) onError(data.error);
+          else onSuccess(data.data.filePath);
+        })
+        .catch(e => onError(e.message));
+    },
+    imageMaxSize: 1024 * 1024 * 10,
+    imageAccept: "image/png,image/jpeg,image/gif,image/webp,image/svg+xml",
+    previewRender: (plainText: string, preview: HTMLElement) => {
+      let raw = renderCustomImages(plainText, currentSlug());
+      let html = marked.parse(raw) as string;
+      html = html.replace(/src="\.\//g, `src="/articles/${currentSlug()}/`);
+      html = html.replace(/src="(?!\/|http|data)([^"]+)"/g, `src="/articles/${currentSlug()}/$1"`);
+      preview.innerHTML = html;
+      return null;
+    },
+    sideBySideFullscreen: false,
+    insertTexts: {
+      horizontalRule: ["", "\n\n---\n\n"],
+      image: ["![", "](./img.jpg)"],
+      link: ["[", "](https://)"],
+      table: ["", "\n\n| Kolumna 1 | Kolumna 2 | Kolumna 3 |\n| --------- | --------- | --------- |\n| Tekst     | Tekst      | Tekst     |\n\n"],
+    },
+    toolbar: [
+      "bold", "italic", "strikethrough", "heading",
+      "|",
+      "code", "quote", "unordered-list", "ordered-list", "check-list",
+      "|",
+      "link", "image", "upload-image", "table", "horizontal-rule",
+      "|",
+      {
+        name: "custom-image",
+        action: () => {
+          const modal = document.getElementById("custom-img-modal")!;
+          (document.getElementById("ci-src") as HTMLInputElement).value = "";
+          (document.getElementById("ci-align") as HTMLSelectElement).value = "left";
+          (document.getElementById("ci-caption") as HTMLInputElement).value = "";
+          (document.getElementById("ci-float") as HTMLSelectElement).value = "false";
+          modal.style.display = "flex";
+        },
+        className: "fa fa-file-image-o",
+        title: "Wstaw obrazek MindForge",
+      },
+      "|",
+      "undo", "redo",
+      "|",
+      "preview", "side-by-side", "fullscreen", "guide",
+    ],
+  });
+
+  // custom image modal handlers
+  document.getElementById("ci-cancel")!.addEventListener("click", () => {
+    document.getElementById("custom-img-modal")!.style.display = "none";
+  });
+  document.getElementById("ci-insert")!.addEventListener("click", () => {
+    const src = (document.getElementById("ci-src") as HTMLInputElement).value.trim();
+    const align = (document.getElementById("ci-align") as HTMLSelectElement).value;
+    const caption = (document.getElementById("ci-caption") as HTMLInputElement).value.trim();
+    const float = (document.getElementById("ci-float") as HTMLSelectElement).value;
+    if (!src) return;
+    const imgMarkdown = `![]("${src}", "${align}", "${caption}", ${float})`;
+    const cm = easyMDE.codemirror;
+    cm.replaceSelection(imgMarkdown);
+    document.getElementById("custom-img-modal")!.style.display = "none";
+  });
+
+  // restore form after HMR reload
+  const savedForm = sessionStorage.getItem("editor-form");
+  if (savedForm) {
+    try {
+      const d = JSON.parse(savedForm);
+      slugEl.value = d.slug || "";
+      titleEl.value = d.title || "";
+      categoryEl.value = d.category || "psychologia";
+      dateEl.value = d.date || new Date().toISOString().slice(0, 10);
+      authorEl.value = d.author || "Tomek";
+      descEl.value = d.desc || "";
+      tagsEl.value = d.tags || "";
+      easyMDE.value(d.content || "");
+      window.location.hash = d.slug || "";
+    } catch {}
+  }
+
+  // load article from sidebar
   document.querySelectorAll("[data-slug]").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const slug = (btn as HTMLElement).dataset.slug!;
       history.replaceState(null, "", "/edytor");
+      sessionStorage.removeItem("editor-form");
       try {
         const resp = await fetch(`/api/article/${slug}`);
         if (!resp.ok) return;
@@ -113,54 +282,30 @@ const NAMES: Record<string, string> = {
         authorEl.value = data.author;
         descEl.value = data.description;
         tagsEl.value = (data.tags || "").replace(/^\["?\]?$/, "").replace(/[\[\]"]/g, "");
-        contentEl.value = data.content;
+        easyMDE.value(data.content);
       } catch {}
     });
   });
 
+  // new article button
   document.getElementById("btn-new")!.addEventListener("click", () => {
+    sessionStorage.removeItem("editor-form");
     slugEl.value = "";
     titleEl.value = "";
-    contentEl.value = "";
     descEl.value = "";
     tagsEl.value = "";
-dateEl.value = new Date().toISOString().slice(0, 10);
-
-  // restore form after HMR reload — sessionStorage has exact state
-  const savedForm = sessionStorage.getItem("editor-form");
-  if (savedForm) {
-    try {
-      const d = JSON.parse(savedForm);
-      slugEl.value = d.slug || "";
-      titleEl.value = d.title || "";
-      categoryEl.value = d.category || "psychologia";
-      dateEl.value = d.date || "";
-      authorEl.value = d.author || "Tomek";
-      descEl.value = d.desc || "";
-      tagsEl.value = d.tags || "";
-      contentEl.value = d.content || "";
-      sessionStorage.removeItem("editor-form");
-    } catch {}
-  } else {
-    const hash2 = window.location.hash.slice(1);
-    if (hash2) {
-      const data = POSTS_DATA.find((p: any) => p.slug === hash2);
-      if (data) {
-        titleEl.value = data.title;
-        slugEl.value = data.slug;
-        categoryEl.value = data.category;
-        dateEl.value = data.date;
-        authorEl.value = data.author;
-        descEl.value = data.description;
-        tagsEl.value = (data.tags || "").replace(/^\["?\]?$/, "").replace(/[\[\]"]/g, "");
-        contentEl.value = data.content;
-      }
-    }
-  }
+    easyMDE.value("");
+    dateEl.value = new Date().toISOString().slice(0, 10);
     authorEl.value = "Tomek";
+    categoryEl.value = "psychologia";
+    window.location.hash = "";
   });
 
+  // preview in new tab
   document.getElementById("btn-preview")!.addEventListener("click", () => {
+    const slug = currentSlug();
+    const content = easyMDE.value();
+    const tags = tagsEl.value.split(",").map((t: string) => t.trim()).filter(Boolean);
     const html = `<!DOCTYPE html>
 <html lang="pl">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -168,15 +313,12 @@ dateEl.value = new Date().toISOString().slice(0, 10);
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/src/styles/global.css">
-<link rel="stylesheet" href="/_astro/BaseLayout.CeunVzAf.css">
 <style>
-body { background: #fff; } 
+body { background: #fff; font-family: 'Inter', sans-serif; }
 article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
-.prose-custom p { margin-bottom: 1.6em; line-height: 1.65; color: #333; font-size: 1rem; font-family: 'Montserrat', sans-serif; }
-.prose-custom p:first-of-type::first-letter { font-size: 4.5rem; float: left; line-height: 0.8; font-weight: 800; margin-right: 0.15em; margin-top: 0.05em; color: #111; font-family: 'Montserrat', sans-serif; }
+.prose-custom p { margin-top: 1em; margin-bottom: 1.6em; line-height: 1.65; color: #333; font-size: 1rem; font-family: 'Montserrat', sans-serif; }
 .prose-custom h2 { font-size: 1.8rem; font-weight: 600; margin: 2.2em 0 0.6em; color: #111; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; gap: 0.5em; }
-.prose-custom h2::before { content: ''; display: inline-block; width: 8px; height: 8px; background: #b9a38f; border-radius: 2px; flex-shrink: 0; }
+.prose-custom h2::before { content: ''; display: inline-block; width: 10px; height: 10px; background: #ea580c; border-radius: 2px; flex-shrink: 0; }
 .prose-custom h3 { font-size: 1.2rem; font-weight: 800; margin: 1.8em 0 0.4em; text-transform: uppercase; letter-spacing: 0; color: #111; font-family: 'Montserrat', sans-serif; }
 .prose-custom blockquote { border-left: 3px solid #2d6a4f; margin: 2em 0; padding: 1em 1.5em; color: #555; font-style: italic; font-size: 1.1rem; background: #f0f5f0; }
 .prose-custom blockquote p { margin-bottom: 0; }
@@ -213,31 +355,16 @@ article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
 <a style="display: inline-block; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; padding: 4px 12px; background: #7c3aed; color: #fff; border-radius: 2px; margin-bottom: 24px; text-decoration: none;">${categoryEl.options[categoryEl.selectedIndex].text}</a>
 <h1 style="font-size: 3rem; font-weight: 700; line-height: 1.15; margin-bottom: 0.3rem; font-family: 'Montserrat', sans-serif;">${titleEl.value}</h1>
 <div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #78716c; margin-bottom: 16px;">
-<span>${authorEl.value}</span><span>&bull;</span><span>${dateEl.value}</span><span>&bull;</span><span>${Math.ceil(contentEl.value.length / 800)} min czytania</span>
+<span>${authorEl.value}</span><span>&bull;</span><span>${dateEl.value}</span><span>&bull;</span><span>${Math.ceil(content.length / 800)} min czytania</span>
 </div>
-<div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #e5e5e5;">${tagsEl.value.split(",").filter(Boolean).map((t: string) => `<span style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #777; border: 1px solid #ddd; padding: 4px 12px;">${t.trim()}</span>`).join("")}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #e5e5e5;">${tags.map((t: string) => `<span style="font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #777; border: 1px solid #ddd; padding: 4px 12px;">${t}</span>`).join("")}</div>
 </header>
 <div class="prose-custom">${(() => {
-      let raw = contentEl.value;
-      // Step 1: wrap custom image syntax in blank lines so marked treats as block HTML
-      raw = raw.replace(/^(\!\[\]\("[^"]+",\s*"[^"]*",\s*"[^"]*",\s*(?:true|false)\))$/gm, "\n$1\n");
-      // Step 2: replace custom image syntax with HTML before markdown parsing
-      raw = raw.replace(/!\[\]\("([^"]+)",\s*"([^"]*)",\s*"([^"]*)",\s*(true|false)\)/g, (_: string, src: string, align: string, caption: string, float: string) => {
-        const fixedSrc = src.replace(/^\.\//, `/articles/${slugEl.value}/`).replace(/^(?!\/|http)/, `/articles/${slugEl.value}/`);
-        const capHtml = caption ? `<div style="text-align: center; font-size: 0.8rem; font-weight: 600; color: #444; margin-top: 0.4em;">${caption}</div>` : "";
-        if (float === "true") {
-          const fl = align === "right" ? "right" : "left";
-          const mg = align === "right" ? "margin-left: 1.5em;" : "margin-right: 1.5em;";
-          return `<div style="float: ${fl}; max-width: 45%; ${mg} margin-bottom: 1.5em;"><img src="${fixedSrc}" alt="${caption}" style="width: 100%; display: block;" />${capHtml}</div>`;
-        } else {
-          const mg = align === "right" ? "margin-left: auto;" : align === "left" ? "margin-right: auto;" : "margin: 0 auto;";
-          return `<div style="display: table; ${mg} margin-bottom: 1.5em;"><img src="${fixedSrc}" alt="${caption}" style="display: block; max-width: 100%;" />${capHtml}</div>`;
-        }
-      });
-      let html = marked.parse(raw) as string;
-      html = html.replace(/src="\.\//g, `src="/articles/${slugEl.value}/`);
-      html = html.replace(/src="(?!\/|http|data)([^"]+)"/g, `src="/articles/${slugEl.value}/$1"`);
-      return html;
+      let raw = renderCustomImages(content, slug);
+      let h = marked.parse(raw) as string;
+      h = h.replace(/src="\.\//g, `src="/articles/${slug}/`);
+      h = h.replace(/src="(?!\/|http|data)([^"]+)"/g, `src="/articles/${slug}/$1"`);
+      return h;
     })()}</div>
 </article>
 </body>
@@ -246,21 +373,24 @@ article { max-width: 1600px; margin: 0 auto; padding: 30px 16px 48px; }
     if (w) { w.document.write(html); w.document.close(); }
   });
 
+  // download MDX
   document.getElementById("btn-download")!.addEventListener("click", () => {
-    const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const tags = tagsEl.value.split(",").map((t) => t.trim()).filter(Boolean);
+    const slug = currentSlug();
+    const content = easyMDE.value();
+    const tags = tagsEl.value.split(",").map((t: string) => t.trim()).filter(Boolean);
     const esc = (s: string) => s.replace(/"/g, '\\"');
+    const escYAML = (s: string) => "'" + s.replace(/'/g, "''") + "'";
     const mdx = `---
 title: ${escYAML(titleEl.value)}
 description: ${escYAML(descEl.value)}
 date: ${dateEl.value}
 category: ${categoryEl.value}
-tags: [${tags.map((t) => `"${t}"`).join(", ")}]
+tags: [${tags.map((t: string) => `"${t}"`).join(", ")}]
 author: ${escYAML(authorEl.value)}
 draft: false
 ---
 
-${contentEl.value}`;
+${content}`;
 
     const blob = new Blob([mdx], { type: "text/mdx" });
     const url = URL.createObjectURL(blob);
@@ -271,29 +401,31 @@ ${contentEl.value}`;
     URL.revokeObjectURL(url);
   });
 
+  // save
   document.getElementById("btn-save")!.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const slug = slugEl.value || titleEl.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-    const tags = tagsEl.value.split(",").map((t) => t.trim()).filter(Boolean);
+    const slug = currentSlug();
+    const content = easyMDE.value();
+    const tags = tagsEl.value.split(",").map((t: string) => t.trim()).filter(Boolean);
     const escYAML = (s: string) => "'" + s.replace(/'/g, "''") + "'";
     const mdx = `---
 title: ${escYAML(titleEl.value)}
 description: ${escYAML(descEl.value)}
 date: ${dateEl.value}
 category: ${categoryEl.value}
-tags: [${tags.map((t) => `"${t}"`).join(", ")}]
+tags: [${tags.map((t: string) => `"${t}"`).join(", ")}]
 author: ${escYAML(authorEl.value)}
 draft: false
 ---
 
-${contentEl.value}`;
+${content}`;
 
     window.location.hash = slug;
     sessionStorage.setItem("editor-form", JSON.stringify({
       slug, title: titleEl.value, category: categoryEl.value,
       date: dateEl.value, author: authorEl.value, desc: descEl.value,
-      tags: tagsEl.value, content: contentEl.value
+      tags: tagsEl.value, content,
     }));
 
     try {
@@ -304,13 +436,26 @@ ${contentEl.value}`;
       });
       if (resp.ok) {
         const d = await resp.json();
-        // update in-memory data so re-clicking shows changes
         const idx = POSTS_DATA.findIndex((p: any) => p.slug === slug);
         if (idx >= 0) {
-          POSTS_DATA[idx] = { ...POSTS_DATA[idx], title: titleEl.value, description: descEl.value, category: categoryEl.value, date: dateEl.value, author: authorEl.value, tags: tagsEl.value, content: contentEl.value };
+          POSTS_DATA[idx] = { ...POSTS_DATA[idx], title: titleEl.value, description: descEl.value, category: categoryEl.value, date: dateEl.value, author: authorEl.value, tags: tagsEl.value, content };
         } else {
-          POSTS_DATA.push({ slug, title: titleEl.value, description: descEl.value, category: categoryEl.value, date: dateEl.value, author: authorEl.value, tags: tagsEl.value, content: contentEl.value });
+          POSTS_DATA.push({ slug, title: titleEl.value, description: descEl.value, category: categoryEl.value, date: dateEl.value, author: authorEl.value, tags: tagsEl.value, content });
         }
+        try {
+          const refresh = await fetch(`/api/article/${slug}`);
+          if (refresh.ok) {
+            const data = await refresh.json();
+            titleEl.value = data.title;
+            slugEl.value = data.slug;
+            categoryEl.value = data.category;
+            dateEl.value = data.date;
+            authorEl.value = data.author;
+            descEl.value = data.description;
+            tagsEl.value = (data.tags || "").replace(/^\["?\]?$/, "").replace(/[\[\]"]/g, "");
+            easyMDE.value(data.content);
+          }
+        } catch {}
         const msg = document.createElement("div");
         msg.className = "fixed bottom-4 right-4 bg-green-700 text-white px-4 py-2 rounded text-sm z-50";
         msg.textContent = d.message || "Zapisano!";
@@ -318,10 +463,10 @@ ${contentEl.value}`;
         setTimeout(() => msg.remove(), 3000);
       } else {
         const data = await resp.json();
-        alert("Błąd: " + (data.error || "Nieznany"));
+        alert("Blad: " + (data.error || "Nieznany"));
       }
     } catch (e: any) {
-      alert("Błąd zapisu: " + e.message);
+      alert("Blad zapisu: " + e.message);
     }
   });
 </script>

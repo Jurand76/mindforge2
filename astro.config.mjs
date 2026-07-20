@@ -3,7 +3,7 @@ import mdx from "@astrojs/mdx";
 
 import tailwindcss from "@tailwindcss/vite";
 
-import node from "@astrojs/node";
+import netlify from "@astrojs/netlify";
 
 export default defineConfig({
   integrations: [mdx()],
@@ -14,7 +14,5 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
-  adapter: node({
-    mode: "standalone",
-  }),
+  adapter: netlify(),
 });
