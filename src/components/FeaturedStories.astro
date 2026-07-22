@@ -27,10 +27,10 @@ const filtered = stories.filter((s) => !excludeSlugs.includes(s.slug));
     </div>
   </div>
 
-    <div id="carousel-track" class="overflow-x-auto pb-2 pt-3 p-1 snap-x snap-mandatory no-scrollbar">
-    <div class="flex gap-6">
+    <div id="carousel-track" class="overflow-x-auto pb-2 pt-3 snap-x snap-mandatory no-scrollbar">
+    <div class="flex gap-3">
     {filtered.map((story) => (
-      <div class="flex-shrink-0 w-[280px] lg:w-[calc(25%-18px)] snap-start fade-in p-1">
+      <div class="flex-shrink-0 w-[280px] lg:w-[calc(25%-9px)] snap-start fade-in">
         <a
         href={`/blog/${story.slug}`}
         class="group block relative overflow-hidden"
@@ -44,12 +44,14 @@ const filtered = stories.filter((s) => !excludeSlugs.includes(s.slug));
           decoding="async"
         />
         <div class="absolute inset-0 flex flex-col justify-end z-10" style="padding: 1.5rem;">
-          <h3 class="text-white leading-tight text-sm" style="margin-bottom: 0.2rem; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
-            {story.title}
-          </h3>
-          <p class="text-white/80 text-xs leading-snug line-clamp-2 hidden sm:block" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
-            {story.description}
-          </p>
+          <div class="bg-black/65 px-3 py-2 rounded">
+            <h3 class="text-white leading-tight text-base md:text-lg font-bold" style="margin-bottom: 0.2rem;">
+              {story.title}
+            </h3>
+            <p class="text-xs leading-snug line-clamp-2 hidden sm:block text-yellow-200">
+              {story.description}
+            </p>
+          </div>
         </div>
         <span
           class="absolute top-3 left-3 text-[10px] tracking-[0.15em] uppercase font-semibold text-white"

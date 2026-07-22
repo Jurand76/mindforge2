@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "predev": "node scripts/copy-images.mjs",
+    "predev": "node scripts/copy-images.mjs & node -e \"try{require('fs').rmSync('node_modules/.vite',{recursive:true,force:true})}catch(e){}\"",
     "build": "node scripts/copy-images.mjs && astro build",
     "preview": "astro preview"
   },

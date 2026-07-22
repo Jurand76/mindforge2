@@ -5,19 +5,25 @@ import FeaturedStories from "../components/FeaturedStories.astro";
 import ServicesSection from "../components/ServicesSection.astro";
 import { getCollection } from "astro:content";
 import { services, CATEGORY_IMAGES, type Article } from "../data/content";
+import fs from "fs";
+import path from "path";
 
 const allPosts = await getCollection("blog", ({ data }) => !data.draft);
 allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
+const extractSlug = (id: string) => id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || id;
+
 const toArticle = (entry: typeof allPosts[number]): Article | null => {
   if (!entry.data?.category) return null;
+  const slug = extractSlug(entry.id);
+  if (!fs.existsSync(path.join(process.cwd(), "public", "articles", slug, "menu_image.jpg"))) return null;
   return {
-    slug: entry.id,
+    slug,
     category: entry.data.category,
     title: entry.data.title,
     description: entry.data.description || "",
     date: entry.data.date.toISOString().slice(0, 10),
-    image: `/articles/${entry.id}/menu_image.jpg`,
+    image: `/articles/${slug}/menu_image.jpg`,
   };
 };
 
@@ -28,13 +34,12 @@ const heroSlugs = articles.slice(0, 5).map((a) => a.slug);
 const olderArticles = articles.slice(5);
 
 if (!heroFeatured) {
-  // fallback - should never happen with 48 posts
   throw new Error("No articles found");
 }
 ---
 
 <BaseLayout
-  title="MindForge — Psychologia, Technologia, Marketing & Ciekawostki"
+  title="Perspektywy — Psychologia, Technologia, Marketing & Ciekawostki"
   description="Blog na pograniczu psychologii, technologii, marketingu i ciekawostek. Odkrywaj nowe perspektywy."
 >
   <HeroEditorialGrid featured={heroFeatured} sideStories={heroSide} />

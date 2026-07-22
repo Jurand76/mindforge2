@@ -23,7 +23,7 @@ const catColor = CATEGORY_COLORS[featured.category];
         <img
           src={featured.image}
           alt={featured.title}
-          class="w-full h-full object-cover transition-transform duration-500 scale-[0.98] group-hover:scale-[0.99]"
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]""
           loading="lazy"
           decoding="async"
         />
@@ -34,6 +34,7 @@ const catColor = CATEGORY_COLORS[featured.category];
           {CATEGORY_NAMES[featured.category]}
         </span>
         <div class="absolute inset-0 flex flex-col justify-end z-10" style="padding: 5%;">
+          <div class="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-black/55 to-transparent" style="z-index: -1;"></div>
           <h3 class="text-white leading-tight text-2xl md:text-3xl font-extrabold" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
             {featured.title}
           </h3>
@@ -58,7 +59,7 @@ const catColor = CATEGORY_COLORS[featured.category];
             <img
               src={story.image}
               alt={story.title}
-          class="w-full h-full object-cover transition-transform duration-500 scale-[0.98] group-hover:scale-[0.99]"
+          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]""
               loading="lazy"
               decoding="async"
             />
@@ -69,6 +70,7 @@ const catColor = CATEGORY_COLORS[featured.category];
               {CATEGORY_NAMES[story.category]}
             </span>
             <div class="absolute inset-0 flex flex-col justify-end z-10" style="padding: 5%;">
+              <div class="absolute bottom-0 left-0 right-0 h-[40%] bg-gradient-to-t from-black/70 to-transparent" style="z-index: -1;"></div>
               <h4 class="text-white leading-tight text-base md:text-lg font-extrabold" style="text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">
                 {story.title}
               </h4>

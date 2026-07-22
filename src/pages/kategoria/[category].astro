@@ -3,17 +3,23 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
 import { CATEGORIES, type Category } from "../../content.config";
 import { CATEGORY_NAMES, CATEGORY_COLORS, CATEGORY_IMAGES } from "../../data/content";
+import fs from "fs";
+import path from "path";
 
 export async function getStaticPaths() {
   return CATEGORIES.map((cat) => ({ params: { category: cat } }));
 }
 
 const { category } = Astro.params as { category: Category };
-const posts = await getCollection("blog", ({ data }) => !data.draft && data.category === category);
-posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const extractSlug = (id: string) => id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || id;
+const allPosts = await getCollection("blog", ({ data }) => !data.draft && data.category === category);
+allPosts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const posts = allPosts.filter((p) => {
+  const pslug = extractSlug(p.id);
+  return fs.existsSync(path.join(process.cwd(), "public", "articles", pslug, "menu_image.jpg"));
+});
 
 const catColor = CATEGORY_COLORS[category];
-const fallbackImg = CATEGORY_IMAGES[category];
 ---
 
 <BaseLayout title={`${CATEGORY_NAMES[category]} | MindForge`} description={`Wpisy z kategorii ${CATEGORY_NAMES[category]}.`}>
@@ -23,7 +29,7 @@ const fallbackImg = CATEGORY_IMAGES[category];
     ) : (
       <div class="space-y-6">
         {posts.map((post) => {
-          const pslug = post.id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || post.id;
+          const pslug = extractSlug(post.id);
           const img = `/articles/${pslug}/menu_image.jpg`;
           return (
             <a
@@ -37,7 +43,6 @@ const fallbackImg = CATEGORY_IMAGES[category];
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
                   decoding="async"
-                  onerror={`this.onerror=null;this.src='${fallbackImg}'`}
                 />
               </div>
               <div class="flex flex-col justify-center min-w-0">

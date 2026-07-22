@@ -4,23 +4,31 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import type { Category } from "../../content.config";
 import { CATEGORY_COLORS, CATEGORY_NAMES, CATEGORY_IMAGES } from "../../data/content";
 import { marked } from "marked";
+import fs from "fs";
+import path from "path";
+
+const extractSlug = (id: string) => id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || id;
 
 export async function getStaticPaths() {
+  const extractSlug = (id: string) => id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || id;
   const posts = await getCollection("blog", ({ data }) => !data.draft);
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+  return posts
+    .filter((post) => fs.existsSync(path.join(process.cwd(), "public", "articles", extractSlug(post.id), "menu_image.jpg")))
+    .map((post) => ({
+      params: { slug: post.id },
+      props: { post },
+    }));
 }
 
 const { post } = Astro.props;
 const { title, description, date, category, tags, author } = post.data;
 const catColor = CATEGORY_COLORS[category] || "#2563eb";
-const topImg = `/articles/${post.id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || post.id}/top_image.jpg`;
+const topImg = `/articles/${extractSlug(post.id)}/top_image.jpg`;
 const fallbackImg = CATEGORY_IMAGES[category];
 
-const pslug = post.id.replace(/\\/g, "/").split("/").slice(-2, -1)[0] || post.id;
+const pslug = extractSlug(post.id);
 let body = post.body || "";
+body = body.replace(/^(\!\[\]\("[^"]+",\s*"[^"]*",\s*"[^"]*",\s*(?:true|false)\))$/gm, "\n$1\n");
 body = body.replace(/!\[\]\("([^"]+)",\s*"([^"]*)",\s*"([^"]*)",\s*(true|false)\)/g,
   (_, src, al, cap, fl) => {
     const psrc = src.replace(/^\.\//, `/articles/${pslug}/`).replace(/^(?!\/|http)/, `/articles/${pslug}/`);
@@ -81,9 +89,7 @@ const articleHtml = marked.parse(body) as string;
         )}
       </header>
 
-      <div class="prose-custom">
-        <div class="prose-custom" set:html={articleHtml} />
-      </div>
+      <div class="prose-custom" set:html={articleHtml} />
 
       <footer class="mt-20 pt-8 border-t border-[#e5e5e5] flex justify-between items-center">
         <a href="/" class="text-sm text-muted hover:text-black transition-colors">&larr; Powrót</a>
@@ -101,16 +107,6 @@ const articleHtml = marked.parse(body) as string;
     color: #333;
     font-size: 1rem;
     font-family: 'Montserrat', sans-serif;
-  }
-  .prose-custom :global(> p:first-of-type::first-letter) {
-    font-size: 4.5rem;
-    float: left;
-    line-height: 0.8;
-    font-weight: 600;
-    margin-right: 0.15em;
-    margin-top: 0.05em;
-    color: #111;
-    font-family: 'Montserrat', 'Inter', sans-serif;
   }
   .prose-custom :global(h2) {
     font-size: 1.8rem;
